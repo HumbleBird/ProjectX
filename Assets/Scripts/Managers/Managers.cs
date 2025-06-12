@@ -13,12 +13,10 @@ public class Managers : MonoBehaviour
     ObjectManager _object = new ObjectManager();
     GameManager _game = new GameManager();
     GameUIManager _gameUI = new GameUIManager();
-    CursorManager _cursor = new CursorManager();
 
     public static ObjectManager Object { get { return Instance._object; } }
     public static GameManager Game { get { return Instance._game; } }
     public static GameUIManager GameUI { get { return Instance._gameUI; } }
-    public static CursorManager Cursor { get { return Instance._cursor; } }
 
     #endregion
 
@@ -62,7 +60,6 @@ public class Managers : MonoBehaviour
             s_instance._pool.Init();
             s_instance._sound.Init();
             s_instance._table.Init();
-            s_instance._cursor.Init();
 
             Application.targetFrameRate = 60;
         }
