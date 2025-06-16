@@ -15,6 +15,7 @@ public class MoveAction : BaseAction
         public GridPosition targetGridPosition;
     }
 
+    public int isOrder = 0;
 
     [SerializeField] private int maxMoveDistance = 4;
 
@@ -58,7 +59,7 @@ public class MoveAction : BaseAction
             float rotateSpeed = 10f;
             transform.forward = Vector3.Slerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
 
-            float moveSpeed = 4f;
+            float moveSpeed = m_StatSystem.m_Stat.m_fMoveSpeed;
             transform.position += moveDirection * moveSpeed * Time.deltaTime;
         }
 
@@ -95,14 +96,14 @@ public class MoveAction : BaseAction
 
     public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(unit.GetGridPosition(), gridPosition, out int pathLength);
+        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(baseObject.GetGridPosition(), gridPosition, out int pathLength);
 
         currentPositionIndex = 0;
         positionList = new List<Vector3>();
 
-        foreach (GridPosition pathGridPosition in pathGridPositionList)
+        for (int i = 0; i < pathGridPositionList.Count - isOrder; i++)
         {
-            positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPosition));
+            positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPositionList[i]));
         }
 
         OnStartMoving?.Invoke(this, EventArgs.Empty);
@@ -114,7 +115,7 @@ public class MoveAction : BaseAction
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
 
-        GridPosition unitGridPosition = unit.GetGridPosition();
+        GridPosition unitGridPosition = baseObject.GetGridPosition();
 
         for (int x = -maxMoveDistance; x <= maxMoveDistance; x++)
         {
@@ -175,7 +176,7 @@ public class MoveAction : BaseAction
 
     public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
     {
-        int targetCountAtGridPosition = unit.GetAction<ShootAction>().GetTargetCountAtPosition(gridPosition);
+        int targetCountAtGridPosition = baseObject.GetAction<ShootAction>().GetTargetCountAtPosition(gridPosition);
 
         return new EnemyAIAction
         {

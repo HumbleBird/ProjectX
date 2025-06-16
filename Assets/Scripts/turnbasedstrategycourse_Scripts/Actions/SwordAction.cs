@@ -36,7 +36,7 @@ public class SwordAction : BaseAction
         switch (state)
         {
             case State.SwingingSwordBeforeHit:
-                Vector3 aimDir = (targetUnit.GetWorldPosition() - unit.GetWorldPosition()).normalized;
+                Vector3 aimDir = (targetUnit.GetWorldPosition() - baseObject.GetWorldPosition()).normalized;
 
                 float rotateSpeed = 10f;
                 transform.forward = Vector3.Lerp(transform.forward, aimDir, Time.deltaTime * rotateSpeed);
@@ -87,7 +87,7 @@ public class SwordAction : BaseAction
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
 
-        GridPosition unitGridPosition = unit.GetGridPosition();
+        GridPosition unitGridPosition = baseObject.GetGridPosition();
 
         for (int x = -maxSwordDistance; x <= maxSwordDistance; x++)
         {
@@ -109,7 +109,7 @@ public class SwordAction : BaseAction
 
                 Unit targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(testGridPosition) as Unit;
 
-                if (targetUnit.IsEnemy() == unit.IsEnemy())
+                if (targetUnit.IsEnemy() == baseObject.IsEnemy())
                 {
                     // Both Units on same 'team'
                     continue;

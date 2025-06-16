@@ -9,13 +9,15 @@ public abstract class BaseAction : MonoBehaviour
     public static event EventHandler OnAnyActionStarted;
     public static event EventHandler OnAnyActionCompleted;
 
-    protected Unit unit;
+    protected Unit baseObject;
+    protected StatSystem m_StatSystem;
     protected bool isActive;
     protected Action onActionComplete;
 
     protected virtual void Awake()
     {
-        unit = GetComponent<Unit>();
+        baseObject = GetComponent<Unit>();
+        m_StatSystem = GetComponent<StatSystem>();
     }
 
     public abstract string GetActionName();
@@ -49,7 +51,7 @@ public abstract class BaseAction : MonoBehaviour
 
     public Unit GetUnit()
     {
-        return unit;
+        return baseObject;
     }
 
     public EnemyAIAction GetBestEnemyAIAction()

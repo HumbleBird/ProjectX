@@ -11,7 +11,7 @@ public class BaseObject : MonoBehaviour
     public static event EventHandler OnAnyUnitDead;
 
     protected GridPosition gridPosition;
-    protected StatSystem healthSystem;
+    protected StatSystem m_StatSystem;
     protected BaseAction[] baseActionArray;
 
     //public E_ObjectType ObjectType;
@@ -20,7 +20,7 @@ public class BaseObject : MonoBehaviour
 
     protected virtual void Awake()
     {
-        healthSystem = GetComponent<StatSystem>();
+        m_StatSystem = GetComponent<StatSystem>();
         baseActionArray = GetComponents<BaseAction>();
     }
 
@@ -31,7 +31,7 @@ public class BaseObject : MonoBehaviour
 
         //TurnSystem.Instance.OnTurnChanged += TurnSystem_OnTurnChanged;
 
-        healthSystem.OnDead += HealthSystem_OnDead;
+        m_StatSystem.OnDead += HealthSystem_OnDead;
 
         OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
     }

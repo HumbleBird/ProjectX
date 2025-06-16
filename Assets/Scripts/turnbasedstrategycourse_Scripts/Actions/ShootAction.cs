@@ -44,7 +44,7 @@ public class ShootAction : BaseAction
         switch (state)
         {
             case State.Aiming:
-                Vector3 aimDir = (targetUnit.GetWorldPosition() - unit.GetWorldPosition()).normalized;
+                Vector3 aimDir = (targetUnit.GetWorldPosition() - baseObject.GetWorldPosition()).normalized;
                 aimDir.y = 0f;
 
                 float rotateSpeed = 10f;
@@ -92,12 +92,12 @@ public class ShootAction : BaseAction
         OnAnyShoot?.Invoke(this, new OnShootEventArgs
         {
             targetUnit = targetUnit,
-            shootingUnit = unit
+            shootingUnit = baseObject
         });
         
         OnShoot?.Invoke(this, new OnShootEventArgs {
             targetUnit = targetUnit,
-            shootingUnit = unit
+            shootingUnit = baseObject
         });
         
         targetUnit.Damage(40);
@@ -112,7 +112,7 @@ public class ShootAction : BaseAction
 
     public override List<GridPosition> GetValidActionGridPositionList()
     {
-        GridPosition unitGridPosition = unit.GetGridPosition();
+        GridPosition unitGridPosition = baseObject.GetGridPosition();
         return GetValidActionGridPositionList(unitGridPosition);
     }
 
@@ -148,7 +148,7 @@ public class ShootAction : BaseAction
 
                     Unit targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(testGridPosition) as Unit;
 
-                    if (targetUnit.IsEnemy() == unit.IsEnemy())
+                    if (targetUnit.IsEnemy() == baseObject.IsEnemy())
                     {
                         // Both Units on same 'team'
                         continue;

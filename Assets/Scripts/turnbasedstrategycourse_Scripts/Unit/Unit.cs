@@ -51,11 +51,11 @@ public class Unit : BaseObject
 
     public void Damage(int damageAmount)
     {
-        healthSystem.Damage(damageAmount);
+        m_StatSystem.Damage(damageAmount);
     }
 
     public float GetHealthNormalized()
     {
-        return healthSystem.GetHealthNormalized();
+        return m_StatSystem.GetHealthNormalized();
     }
 }

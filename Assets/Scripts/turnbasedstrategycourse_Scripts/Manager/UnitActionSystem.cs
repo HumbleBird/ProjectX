@@ -22,7 +22,7 @@ public class UnitActionSystem : MonoBehaviour
     public List<BaseObject> AvailableUnits = new List<BaseObject>();
     [SerializeField] private LayerMask unitLayerMask;
 
-    private BaseAction selectedAction;
+    private BaseAction m_SelectedActions;
 
     private void Awake()
     {
@@ -55,26 +55,39 @@ public class UnitActionSystem : MonoBehaviour
     {
         if (InputManager.Instance.IsMouseButtonDownThisFrame())
         {
+            GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPositionOnlyHitVisible());
+
             // Select Object
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, unitLayerMask)
                 && hit.collider.TryGetComponent<BaseObject>(out BaseObject result))
             {
+                if(result is Unit)
+                {
+
+                }
                 // Enemy Attack
                 // etc...
             }
             // Select Grid
             else
             {
-                if(selectedAction is MoveAction)
+                // Move
+                if (m_SelectedActions == null)
                 {
-                    GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPositionOnlyHitVisible());
+                    var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList();
+                    var filterObjects = FilterUnitsWithAction<MoveAction>(units);
 
-                    if (!selectedAction.IsValidActionGridPosition(mouseGridPosition))
-                        return;
+                    int unitCount = 0;
+                    foreach (var (unit, action) in filterObjects)
+                    {
+                        if (!action.IsValidActionGridPosition(mouseGridPosition))
+                            return;
 
-                    selectedAction.TakeAction(mouseGridPosition, null);
+                        action.isOrder = unitCount++;
+                        action.TakeAction(mouseGridPosition, () => { action.isOrder = 0; } );
 
-                    OnActionStarted?.Invoke(this, EventArgs.Empty);
+                        OnActionStarted?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
         }
@@ -114,11 +127,11 @@ public class UnitActionSystem : MonoBehaviour
 
     public void SetSelectedAction(BaseAction baseAction)
     {
-        selectedAction = baseAction;
+        m_SelectedActions = baseAction;
 
         OnSelectedActionChanged?.Invoke(this, EventArgs.Empty);
 
-        Debug.Log($"({selectedAction.GetActionName()}) Action 이 선택됨");
+        Debug.Log($"({m_SelectedActions.GetActionName()}) Action 이 선택됨");
     }
 
 
@@ -129,21 +142,20 @@ public class UnitActionSystem : MonoBehaviour
         if (m_SelectedObjects.Count == 0)
             return;
 
-        var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList() ;
+        //var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList() ;
 
-        List<BaseAction> commonActionTypes = GetCommonActionTypes(units);
+        //List<BaseAction> commonActionTypes = GetCommonActionTypes(units);
 
-        // 기본 이동 선택
-        // 유닛 + 건물 같이 선택 사항에서 이동 가능한 오브젝트만 이동 시키기
-        MoveAction commonMoveAction = commonActionTypes
-            .FirstOrDefault(x => x is MoveAction) as MoveAction;
+        //// 기본 이동 선택
+        //// 유닛 + 건물 같이 선택 사항에서 이동 가능한 오브젝트만 이동 시키기
+        //MoveAction commonMoveAction = commonActionTypes
+        //    .FirstOrDefault(x => x is MoveAction) as MoveAction;
 
-
-        if (commonMoveAction != null)
-        {
-            SetSelectedAction(commonMoveAction);
-            selectedAction = commonMoveAction;
-        }
+        //if (commonMoveAction != null)
+        //{
+        //    SetSelectedAction(commonMoveAction);
+        //    m_SelectedActions = commonMoveAction;
+        //}
     }
 
     public List<BaseAction> GetCommonActionTypes(List<BaseObject> selectedUnits)
@@ -171,12 +183,14 @@ public class UnitActionSystem : MonoBehaviour
             .ToList();
     }
 
-    public  List<BaseObject> FilterUnitsWithAction<TAction>(List<BaseObject> selectedUnits) where TAction : BaseAction
+    public List<(BaseObject unit, TAction action)> FilterUnitsWithAction<TAction>(List<BaseObject> selectedUnits) where TAction : BaseAction
     {
         return selectedUnits
-            .Where(unit => unit.GetActions().Any(action => action is TAction))
+            .Select(unit => (unit, action: unit.GetActions().OfType<TAction>().FirstOrDefault()))
+            .Where(pair => pair.action != null)
             .ToList();
     }
+
 
 
 

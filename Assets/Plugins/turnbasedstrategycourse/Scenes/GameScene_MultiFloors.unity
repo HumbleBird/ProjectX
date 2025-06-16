@@ -11399,10 +11399,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   SelectionBox: {fileID: 431270519}
-  DragDelay: 0.1
+  DragDelay: 0.5
   m_BaseObjectLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 640
 --- !u!4 &1551957941
 Transform:
   m_ObjectHideFlags: 0
@@ -11921,6 +11921,14 @@ PrefabInstance:
     - target: {fileID: 5050577193248463150, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6524592399208437847, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
+      propertyPath: ActionName
+      value: Move
+      objectReference: {fileID: 0}
+    - target: {fileID: 6524592399208437847, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
+      propertyPath: maxMoveDistance
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7596500971379310254, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -12985,6 +12993,10 @@ PrefabInstance:
     - target: {fileID: 7598697498916202326, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0.05782607
+      objectReference: {fileID: 0}
+    - target: {fileID: 7601346721002605746, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7601346721002605772, guid: 69b98c41becc4ae4099f1eba6797785b, type: 3}
       propertyPath: m_Name
