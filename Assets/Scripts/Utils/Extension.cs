@@ -25,4 +25,11 @@ public static class Extension
 	{
 		return go != null && go.activeSelf;
 	}
+
+	public static bool TryGetComponentInChildren<T>(this GameObject go, out T result) where T : Component
+    {
+		return Util.TryGetComponentInChildren<T>(go, out result);
+
+    }
+
 }

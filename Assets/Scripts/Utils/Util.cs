@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class Util
 {
-
+    public static bool TryGetComponentInChildren<T>(GameObject go, out T result) where T : Component
+    {
+        result = go.GetComponentInChildren<T>();
+        return result != null;
+    }
 
     public static T GetOrAddComponent<T>(GameObject go) where T : UnityEngine.Component
     {

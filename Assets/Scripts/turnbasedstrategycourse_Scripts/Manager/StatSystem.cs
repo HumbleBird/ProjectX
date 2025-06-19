@@ -20,6 +20,8 @@ public class StatSystem : MonoBehaviour
     [SerializeField] private int mp { get => m_Stat.m_iCurrentMP;  set { m_Stat.m_iCurrentMP = value; } }
     private int mpMax { get => m_Stat.m_iMaxMP; set { m_Stat.m_iMaxMP = value; } }
 
+    public bool m_IsDead => health == 0;
+
     private void Awake()
     {
         // HP

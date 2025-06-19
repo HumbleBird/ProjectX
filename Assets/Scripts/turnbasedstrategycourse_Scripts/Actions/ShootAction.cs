@@ -44,7 +44,7 @@ public class ShootAction : BaseAction
         switch (state)
         {
             case State.Aiming:
-                Vector3 aimDir = (targetUnit.GetWorldPosition() - baseObject.GetWorldPosition()).normalized;
+                Vector3 aimDir = (targetUnit.GetWorldPosition() - m_BaseObject.GetWorldPosition()).normalized;
                 aimDir.y = 0f;
 
                 float rotateSpeed = 10f;
@@ -92,12 +92,12 @@ public class ShootAction : BaseAction
         OnAnyShoot?.Invoke(this, new OnShootEventArgs
         {
             targetUnit = targetUnit,
-            shootingUnit = baseObject
+            shootingUnit = m_BaseObject
         });
         
         OnShoot?.Invoke(this, new OnShootEventArgs {
             targetUnit = targetUnit,
-            shootingUnit = baseObject
+            shootingUnit = m_BaseObject
         });
         
         targetUnit.Damage(40);
@@ -112,7 +112,7 @@ public class ShootAction : BaseAction
 
     public override List<GridPosition> GetValidActionGridPositionList()
     {
-        GridPosition unitGridPosition = baseObject.GetGridPosition();
+        GridPosition unitGridPosition = m_BaseObject.GetGridPosition();
         return GetValidActionGridPositionList(unitGridPosition);
     }
 
@@ -148,7 +148,7 @@ public class ShootAction : BaseAction
 
                     Unit targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(testGridPosition) as Unit;
 
-                    if (targetUnit.IsEnemy() == baseObject.IsEnemy())
+                    if (targetUnit.IsEnemy() == m_BaseObject.IsEnemy())
                     {
                         // Both Units on same 'team'
                         continue;
@@ -176,7 +176,7 @@ public class ShootAction : BaseAction
         return validGridPositionList;
     }
 
-    public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
+    public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
         targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(gridPosition) as Unit;
 
@@ -187,9 +187,11 @@ public class ShootAction : BaseAction
         canShootBullet = true;
 
         ActionStart(onActionComplete);
+
+        return null;
     }
 
-    public Unit GetTargetUnit()
+    public BaseObject GetTargetBaseObject()
     {
         return targetUnit;
     }

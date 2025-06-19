@@ -5,24 +5,32 @@ using UnityEngine;
 
 public abstract class BaseAction : MonoBehaviour
 {
-
     public static event EventHandler OnAnyActionStarted;
     public static event EventHandler OnAnyActionCompleted;
 
-    protected Unit baseObject;
+    protected Unit m_BaseObject;
     protected StatSystem m_StatSystem;
     protected bool isActive;
     protected Action onActionComplete;
 
+    protected LayerMask detectionLayer;
+    protected LayerMask layerThatBlockLineOfSight;
+
+    protected BaseObject m_Target;
+
+
     protected virtual void Awake()
     {
-        baseObject = GetComponent<Unit>();
-        m_StatSystem = GetComponent<StatSystem>();
+        m_BaseObject = GetComponentInParent<Unit>();
+        m_StatSystem = GetComponentInParent<StatSystem>();
+
+        detectionLayer = 1 << LayerMask.NameToLayer("Units") | 1 << LayerMask.NameToLayer("Building");
+        layerThatBlockLineOfSight = 1 << LayerMask.NameToLayer("Obstacles");
     }
 
     public abstract string GetActionName();
 
-    public abstract void TakeAction(GridPosition gridPosition, Action onActionComplete);
+    public abstract BaseAction TakeAction(GridPosition gridPosition = default, Action onActionComplete = null);
 
     public virtual bool IsValidActionGridPosition(GridPosition gridPosition)
     {
@@ -33,7 +41,7 @@ public abstract class BaseAction : MonoBehaviour
     public abstract List<GridPosition> GetValidActionGridPositionList();
 
 
-    protected void ActionStart(Action onActionComplete)
+    public void ActionStart(Action onActionComplete)
     {
         isActive = true;
         this.onActionComplete = onActionComplete;
@@ -49,9 +57,9 @@ public abstract class BaseAction : MonoBehaviour
         OnAnyActionCompleted?.Invoke(this, EventArgs.Empty);
     }
 
-    public Unit GetUnit()
+    public BaseObject GetObject()
     {
-        return baseObject;
+        return m_BaseObject;
     }
 
     public EnemyAIAction GetBestEnemyAIAction()
@@ -79,5 +87,11 @@ public abstract class BaseAction : MonoBehaviour
     }
 
     public abstract EnemyAIAction GetEnemyAIAction(GridPosition gridPosition);
+
+
+    public void SetTarget(BaseObject target)
+    {
+        m_Target = target;
+    }
 
 }

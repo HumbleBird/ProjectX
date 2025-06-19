@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class LevelGrid : MonoBehaviour
@@ -26,6 +27,7 @@ public class LevelGrid : MonoBehaviour
     [SerializeField] private int floorAmount;
     
     private List<GridSystem<GridObject>> gridSystemList;
+    private Dictionary<GridPosition, bool> reserveGirdPosition = new Dictionary<GridPosition, bool>();
 
 
     private void Awake()
@@ -134,6 +136,17 @@ public class LevelGrid : MonoBehaviour
         return gridObject.GetUnit();
     }
 
+    public bool HasEnemyAtGridPosition(GridPosition gridPosition, BaseObject searcher)
+    {
+        BaseObject o = GetUnitAtGridPosition(gridPosition);
+        if (o == null)
+            return false;
+        else if (o.IsEnemy() == searcher.IsEnemy())
+            return false;
+
+        return true;
+    }
+
     public IInteractable GetInteractableAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = GetGridSystem(gridPosition.floor).GetGridObject(gridPosition);
@@ -152,5 +165,55 @@ public class LevelGrid : MonoBehaviour
         gridObject.ClearInteractable();
     }
 
+    public GridPosition DistanceGridPosition(GridPosition gridPosition, GridPosition targetPosition)
+    {
+        return gridPosition - targetPosition;
+    }
 
+    public GridPosition GetClosestTargetGridPosition(GridPosition gridPosition, List<GridPosition> positions)
+    {
+        GridPosition selfPos = gridPosition;
+        GridPosition closest = positions[0];
+
+        float minDistanceSqr = GridPosition.GetGridDistanceSquared(selfPos, closest);
+
+        foreach (GridPosition pos in positions)
+        {
+            float distSqr = GridPosition.GetGridDistanceSquared(selfPos, pos);
+            if (distSqr < minDistanceSqr)
+            {
+                minDistanceSqr = distSqr;
+                closest = pos;
+            }
+        }
+
+        return closest;
+    }
+
+    public bool IsTargetInAttackRange(GridPosition gridPosition, GridPosition targetPosition)
+    {
+        BaseObject attacker = GetUnitAtGridPosition(gridPosition);
+
+        int pos = gridPosition.x - targetPosition.x + gridPosition.z - targetPosition.z;
+        if (attacker.m_StatSystem.m_Stat.m_iMaxAttackRange >= pos &&
+           attacker.m_StatSystem.m_Stat.m_iMinAttackRange <= pos)
+            return true;
+
+        return false;
+    }
+
+    public void SetReserveGridPosition(GridPosition gridPosition, bool isReserve)
+    {
+        if (reserveGirdPosition.TryGetValue(gridPosition, out bool result) == false)
+            reserveGirdPosition.Add(gridPosition, isReserve);
+        else
+            reserveGirdPosition[gridPosition] = isReserve;
+    }
+
+    public bool GetReservedGridPosition(GridPosition gridPosition)
+    {
+        reserveGirdPosition.TryGetValue(gridPosition, out bool result);
+
+        return result;
+    }
 }

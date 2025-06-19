@@ -46,7 +46,11 @@ public class BaseStat : ScriptableObject
     public int m_iCurrentMP ; // 현재 마나
 
     public float m_fMoveSpeed ; // 이동 속도
-    public int m_iAttackRange; // 공격 범위
+
+    public int m_iMaxAttackRange; // 최대 공격 범위
+    public int m_iMinAttackRange; // 최소 공격 범위 (레인저의 경우 근접 타일을 공격 못 한다)
+    public int m_iDetectRange; // 감지 거리
+    public int m_iChaseRange; // 추격 거리
 
     [Header("Damage")]
     public int m_iPhysicalAttackDamage ;     // 물리 공격 데미지
@@ -60,7 +64,7 @@ public class BaseStat : ScriptableObject
     public int m_iPhysicalDefence; // 물리 방어력
     public int m_iMagicalDefence ; // 마법 방어력
 
-    [Header("Special Chance")]
+    [Header("Battle Attack Chance")]
     public float m_fCriticalChance ;     // 치명타율
     public float m_fCriticalDamageUp ;   // 치명타 데미지 증가율
     public float m_fEvasion ;            // 회피율

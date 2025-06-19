@@ -31,8 +31,8 @@ public class CameraManager : MonoBehaviour
         switch (sender)
         {
             case ShootAction shootAction:
-                Unit shooterUnit = shootAction.GetUnit();
-                Unit targetUnit = shootAction.GetTargetUnit();
+                Unit shooterUnit = shootAction.GetObject() as Unit;
+                Unit targetUnit = shootAction.GetTargetBaseObject() as Unit;
 
                 Vector3 cameraCharacterHeight = Vector3.up * 1.7f;
 

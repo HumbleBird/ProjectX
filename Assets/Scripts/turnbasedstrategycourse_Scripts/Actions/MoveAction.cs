@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class MoveAction : BaseAction
 {
-
     public event EventHandler OnStartMoving;
     public event EventHandler OnStopMoving;
     public event EventHandler<OnChangeFloorsStartedEventArgs> OnChangedFloorsStarted;
@@ -94,9 +93,9 @@ public class MoveAction : BaseAction
     }
 
 
-    public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
+    public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(baseObject.GetGridPosition(), gridPosition, out int pathLength);
+        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(m_BaseObject.GetGridPosition(), gridPosition, out int pathLength);
 
         currentPositionIndex = 0;
         positionList = new List<Vector3>();
@@ -109,13 +108,15 @@ public class MoveAction : BaseAction
         OnStartMoving?.Invoke(this, EventArgs.Empty);
 
         ActionStart(onActionComplete);
+
+        return null;
     }
 
     public override List<GridPosition> GetValidActionGridPositionList()
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
 
-        GridPosition unitGridPosition = baseObject.GetGridPosition();
+        GridPosition unitGridPosition = m_BaseObject.GetGridPosition();
 
         for (int x = -maxMoveDistance; x <= maxMoveDistance; x++)
         {
@@ -142,6 +143,10 @@ public class MoveAction : BaseAction
                         // Grid Position already occupied with another Unit
                         continue;
                     }
+
+                    // Check Reverse Pos
+                    if (LevelGrid.Instance.GetReservedGridPosition(testGridPosition))
+                        continue;
 
                     if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))
                     {
@@ -176,7 +181,7 @@ public class MoveAction : BaseAction
 
     public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
     {
-        int targetCountAtGridPosition = baseObject.GetAction<ShootAction>().GetTargetCountAtPosition(gridPosition);
+        int targetCountAtGridPosition = m_BaseObject.GetAction<ShootAction>().GetTargetCountAtPosition(gridPosition);
 
         return new EnemyAIAction
         {
@@ -184,5 +189,5 @@ public class MoveAction : BaseAction
             actionValue = targetCountAtGridPosition * 10,
         };
     }
-    
+
 }

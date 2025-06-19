@@ -41,7 +41,7 @@ public class GrenadeAction : BaseAction
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
 
-        GridPosition unitGridPosition = baseObject.GetGridPosition();
+        GridPosition unitGridPosition = m_BaseObject.GetGridPosition();
 
         for (int x = -maxThrowDistance; x <= maxThrowDistance; x++)
         {
@@ -68,18 +68,19 @@ public class GrenadeAction : BaseAction
         return validGridPositionList;
     } 
 
-    public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
+    public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        Transform grenadeProjectileTransform = Instantiate(grenadeProjectilePrefab, baseObject.GetWorldPosition(), Quaternion.identity);
+        Transform grenadeProjectileTransform = Instantiate(grenadeProjectilePrefab, m_BaseObject.GetWorldPosition(), Quaternion.identity);
         GrenadeProjectile grenadeProjectile = grenadeProjectileTransform.GetComponent<GrenadeProjectile>();
         grenadeProjectile.Setup(gridPosition, OnGrenadeBehaviourComplete);
 
         ActionStart(onActionComplete);
+
+        return null;
     }
 
     private void OnGrenadeBehaviourComplete()
     {
         ActionComplete();
     }
-
 }

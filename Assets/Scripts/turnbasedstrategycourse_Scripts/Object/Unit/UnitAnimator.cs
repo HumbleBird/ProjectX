@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 
 public class UnitAnimator : MonoBehaviour
 {
@@ -12,22 +13,31 @@ public class UnitAnimator : MonoBehaviour
     [SerializeField] private Transform rifleTransform;
     [SerializeField] private Transform swordTransform;
 
+    [SerializeField] private Transform actionTransform;
+
 
     private void Awake()
     {
-        if (TryGetComponent<MoveAction>(out MoveAction moveAction))
+        if (actionTransform.TryGetComponent<MoveAction>(out MoveAction moveAction))
         {
             moveAction.OnStartMoving += MoveAction_OnStartMoving;
             moveAction.OnStopMoving += MoveAction_OnStopMoving;
             moveAction.OnChangedFloorsStarted += MoveAction_OnChangedFloorsStarted;
         }
 
-        if (TryGetComponent<ShootAction>(out ShootAction shootAction))
+        if (actionTransform.TryGetComponent<ChaseAction>(out ChaseAction chaseAction))
+        {
+            chaseAction.OnStartMoving += MoveAction_OnStartMoving;
+            chaseAction.OnStopMoving += MoveAction_OnStopMoving;
+            chaseAction.OnChangedFloorsStarted += ChaseAction_OnChangedFloorsStarted;
+        }
+
+        if (actionTransform.TryGetComponent<ShootAction>(out ShootAction shootAction))
         {
             shootAction.OnShoot += ShootAction_OnShoot;
         }
 
-        if (TryGetComponent<SwordAction>(out SwordAction swordAction))
+        if (actionTransform.TryGetComponent<SwordAction>(out SwordAction swordAction))
         {
             swordAction.OnSwordActionStarted += SwordAction_OnSwordActionStarted;
             swordAction.OnSwordActionCompleted += SwordAction_OnSwordActionCompleted;
@@ -35,6 +45,19 @@ public class UnitAnimator : MonoBehaviour
     }
 
     private void MoveAction_OnChangedFloorsStarted(object sender, MoveAction.OnChangeFloorsStartedEventArgs e)
+    {
+        if (e.targetGridPosition.floor > e.unitGridPosition.floor)
+        {
+            // Jump
+            animator.SetTrigger("JumpUp");
+        } else
+        {
+            // Drop
+            animator.SetTrigger("JumpDown");
+        }
+    }
+
+    private void ChaseAction_OnChangedFloorsStarted(object sender, ChaseAction.OnChangeFloorsStartedEventArgs e)
     {
         if (e.targetGridPosition.floor > e.unitGridPosition.floor)
         {

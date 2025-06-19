@@ -35,7 +35,7 @@ public class InteractAction : BaseAction
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
 
-        GridPosition unitGridPosition = baseObject.GetGridPosition();
+        GridPosition unitGridPosition = m_BaseObject.GetGridPosition();
 
         for (int x = -maxInteractDistance; x <= maxInteractDistance; x++)
         {
@@ -64,18 +64,19 @@ public class InteractAction : BaseAction
         return validGridPositionList;
     }
 
-    public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
+    public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
         IInteractable interactable = LevelGrid.Instance.GetInteractableAtGridPosition(gridPosition);
 
         interactable.Interact(OnInteractComplete);
 
         ActionStart(onActionComplete);
+
+        return null;
     }
 
     private void OnInteractComplete()
     {
         ActionComplete();
     }
-
 }

@@ -20,6 +20,8 @@ public class Define
         None = 0,
         Unit = 1,
         Building = 2,
+        Interact = 3,
+
     }
 
     #region Base

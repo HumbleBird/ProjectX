@@ -77,14 +77,12 @@ public class UnitActionSystem : MonoBehaviour
                     var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList();
                     var filterObjects = FilterUnitsWithAction<MoveAction>(units);
 
-                    int unitCount = 0;
                     foreach (var (unit, action) in filterObjects)
                     {
                         if (!action.IsValidActionGridPosition(mouseGridPosition))
                             return;
 
-                        action.isOrder = unitCount++;
-                        action.TakeAction(mouseGridPosition, () => { action.isOrder = 0; } );
+                        action.TakeAction(mouseGridPosition, () => { } );
 
                         OnActionStarted?.Invoke(this, EventArgs.Empty);
                     }
