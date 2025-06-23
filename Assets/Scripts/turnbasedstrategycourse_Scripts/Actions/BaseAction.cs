@@ -18,6 +18,7 @@ public abstract class BaseAction : MonoBehaviour
 
     protected BaseObject m_Target;
 
+    public GridPosition DestGirdPosition;
 
     protected virtual void Awake()
     {
@@ -44,7 +45,7 @@ public abstract class BaseAction : MonoBehaviour
     public void ActionStart(Action onActionComplete)
     {
         isActive = true;
-        this.onActionComplete = onActionComplete;
+        //this.onActionComplete = onActionComplete;
 
         OnAnyActionStarted?.Invoke(this, EventArgs.Empty);
     }
@@ -55,6 +56,12 @@ public abstract class BaseAction : MonoBehaviour
         onActionComplete?.Invoke();
 
         OnAnyActionCompleted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetActionComlete(Action onActionComplete)
+    {
+        this.onActionComplete = onActionComplete;
+
     }
 
     public BaseObject GetObject()
@@ -89,9 +96,14 @@ public abstract class BaseAction : MonoBehaviour
     public abstract EnemyAIAction GetEnemyAIAction(GridPosition gridPosition);
 
 
-    public void SetTarget(BaseObject target)
+    public virtual void SetTarget(BaseObject target)
     {
         m_Target = target;
+    }
+
+    public void CancelReverveGridPosition()
+    {
+        LevelGrid.Instance.SetReserveGridPosition(DestGirdPosition, false);
     }
 
 }

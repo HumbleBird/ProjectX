@@ -19,9 +19,12 @@ MonoBehaviour:
   m_iMaxMP: 100
   m_iCurrentMP: 100
   m_fMoveSpeed: 4
+  m_fChaseSpeed: 4
+  m_fPatrolSpeed: 4
   m_iMaxAttackRange: 1
   m_iMinAttackRange: 0
-  m_iDetectRange: 4
+  m_iDefaultMoveRange: 4
+  m_iDetectRange: 5
   m_iChaseRange: 5
   m_iPhysicalAttackDamage: 0
   m_iMagicAttackDamage: 0

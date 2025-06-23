@@ -1,3 +1,4 @@
+using Palmmedia.ReportGenerator.Core.Reporting.Builders;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,7 +23,8 @@ public class UnitActionSystem : MonoBehaviour
     public List<BaseObject> AvailableUnits = new List<BaseObject>();
     [SerializeField] private LayerMask unitLayerMask;
 
-    private BaseAction m_SelectedActions;
+    private BaseAction m_SelectedAction;
+    private BaseAction m_AfterAction;
 
     private void Awake()
     {
@@ -71,25 +73,38 @@ public class UnitActionSystem : MonoBehaviour
             // Select Grid
             else
             {
-                // Move
-                if (m_SelectedActions == null)
+                if (m_SelectedAction == null)
                 {
-                    var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList();
-                    var filterObjects = FilterUnitsWithAction<MoveAction>(units);
-
-                    foreach (var (unit, action) in filterObjects)
-                    {
-                        if (!action.IsValidActionGridPosition(mouseGridPosition))
-                            return;
-
-                        action.TakeAction(mouseGridPosition, () => { } );
-
-                        OnActionStarted?.Invoke(this, EventArgs.Empty);
-                    }
+                    ExecuteActionForUnits<CommandMoveAction>(
+                        mouseGridPosition,
+                        (u,a)=>
+                        {
+                            u.SwitchToNextState(u.GetAction<IdleAction>());
+                            Debug.Log("Player Command After Line");
+                        });
                 }
             }
         }
     }
+
+    private void ExecuteActionForUnits<TAction>(GridPosition gridPosition, Action<BaseObject, TAction> onActionComplete = null) where TAction : BaseAction
+    {
+        var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList();
+        var filterObjects = FilterUnitsWithAction<TAction>(units);
+
+        foreach (var (unit, action) in filterObjects)
+        {
+            if (!action.IsValidActionGridPosition(gridPosition))
+                return;
+
+            action.DestGirdPosition = gridPosition;
+            unit.DirectCommand(action, onActionComplete);
+            OnActionStarted?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+
+
     #region Select Object
 
     public void SetSelectedObject(BaseObject unit)
@@ -125,11 +140,11 @@ public class UnitActionSystem : MonoBehaviour
 
     public void SetSelectedAction(BaseAction baseAction)
     {
-        m_SelectedActions = baseAction;
+        m_SelectedAction = baseAction;
 
         OnSelectedActionChanged?.Invoke(this, EventArgs.Empty);
 
-        Debug.Log($"({m_SelectedActions.GetActionName()}) Action ÀÌ ¼±ÅÃµÊ");
+        Debug.Log($"({m_SelectedAction.GetActionName()}) Action ÀÌ ¼±ÅÃµÊ");
     }
 
 
@@ -188,9 +203,5 @@ public class UnitActionSystem : MonoBehaviour
             .Where(pair => pair.action != null)
             .ToList();
     }
-
-
-
-
     #endregion
 }

@@ -10,18 +10,22 @@ public class BaseObject : MonoBehaviour
     public static event EventHandler OnAnyUnitSpawned;
     public static event EventHandler OnAnyUnitDead;
 
+    [Header("Object Info")]
     protected GridPosition gridPosition;
     public StatSystem m_StatSystem { get; protected set; }
-
-    [SerializeField] protected BaseAction m_CurrentAction;
-    private Dictionary<Type, BaseAction> baseActionDict = new Dictionary<Type, BaseAction>();
-
-    //public E_ObjectType ObjectType;
     [SerializeField] protected bool isEnemy;
-    [SerializeField] protected bool isBusy; // Checking If Do it Yours Command
     public E_ObjectType m_ObjectType;
 
-    // Check Timer
+    [Header("Action")]
+    private Dictionary<Type, BaseAction> baseActionDict = new Dictionary<Type, BaseAction>();
+    [SerializeField] protected BaseAction m_CurrentAction;
+    [SerializeField] protected BaseAction m_BeforeAction;
+
+    [Header("Player DirectCommand")]
+    public bool IsPlayerControlled { get; private set; } = false;
+    private Queue<Action> followUpCommands = new();
+
+    [Header("Check Timer")]
     float checkInterval = 0.5f;
     float timer = 0f;
 
@@ -51,6 +55,21 @@ public class BaseObject : MonoBehaviour
     protected virtual void Update()
     {
         HandleStateMachine();
+        UpdateGridPosition();
+    }
+
+
+    private  void UpdateGridPosition()
+    {
+        GridPosition newGridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
+        if (newGridPosition != gridPosition)
+        {
+            // Unit changed Grid Position
+            GridPosition oldGridPosition = gridPosition;
+            gridPosition = newGridPosition;
+
+            LevelGrid.Instance.UnitMovedGridPosition(this, oldGridPosition, newGridPosition);
+        }
     }
 
     private void HandleStateMachine()
@@ -58,24 +77,27 @@ public class BaseObject : MonoBehaviour
         if (m_StatSystem.m_IsDead)
             return;
 
-        // TODO
-        // 플레이어의 입력이 들어오면 최우선으로 처리한다.
-        // 상태이상 등으로 인해 플레이어의 입력을 막는다.
-
         timer -= Time.deltaTime;
         if(timer <= 0f)
         {
             timer = checkInterval;
-            var nextAction = m_CurrentAction?.TakeAction();
 
-            if (nextAction != null)
-                SwitchToNextState(nextAction);
+            ExecuteAction();
         }
     }
 
-    public void SwitchToNextState(BaseAction state)
+    private void ExecuteAction()
     {
-        m_CurrentAction = state;
+        var nextAction = m_CurrentAction?.TakeAction();
+
+        if (nextAction != null)
+            SwitchToNextState(nextAction);
+    }
+
+    public void SwitchToNextState(BaseAction nextAction)
+    {
+        m_CurrentAction = nextAction;
+
     }
 
     public virtual void OnDeselected()
@@ -135,5 +157,16 @@ public class BaseObject : MonoBehaviour
     public float GetHealthNormalized()
     {
         return m_StatSystem.GetHealthNormalized();
+    }
+
+    public void DirectCommand<TAction>(BaseAction action, Action<BaseObject, TAction> onActionComplete) where TAction : BaseAction
+    {
+        m_BeforeAction = m_CurrentAction;
+        m_CurrentAction = action;
+
+        if (action is TAction typedAction)
+        {
+            action.SetActionComlete(() => onActionComplete?.Invoke(this, typedAction));
+        }
     }
 }

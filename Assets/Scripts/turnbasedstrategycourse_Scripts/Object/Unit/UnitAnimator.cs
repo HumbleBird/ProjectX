@@ -18,18 +18,17 @@ public class UnitAnimator : MonoBehaviour
 
     private void Awake()
     {
-        if (actionTransform.TryGetComponent<MoveAction>(out MoveAction moveAction))
+        if (actionTransform.TryGetComponent<CommandMoveAction>(out CommandMoveAction CommandMoveAction))
         {
-            moveAction.OnStartMoving += MoveAction_OnStartMoving;
-            moveAction.OnStopMoving += MoveAction_OnStopMoving;
-            moveAction.OnChangedFloorsStarted += MoveAction_OnChangedFloorsStarted;
+            CommandMoveAction.OnStartMoving += MoveAction_OnStartMoving;
+            CommandMoveAction.OnStopMoving += MoveAction_OnStopMoving;
+            CommandMoveAction.OnChangedFloorsStarted += MoveAction_OnChangedFloorsStarted;
         }
-
         if (actionTransform.TryGetComponent<ChaseAction>(out ChaseAction chaseAction))
         {
             chaseAction.OnStartMoving += MoveAction_OnStartMoving;
             chaseAction.OnStopMoving += MoveAction_OnStopMoving;
-            chaseAction.OnChangedFloorsStarted += ChaseAction_OnChangedFloorsStarted;
+            chaseAction.OnChangedFloorsStarted += MoveAction_OnChangedFloorsStarted;
         }
 
         if (actionTransform.TryGetComponent<ShootAction>(out ShootAction shootAction))
@@ -45,19 +44,6 @@ public class UnitAnimator : MonoBehaviour
     }
 
     private void MoveAction_OnChangedFloorsStarted(object sender, MoveAction.OnChangeFloorsStartedEventArgs e)
-    {
-        if (e.targetGridPosition.floor > e.unitGridPosition.floor)
-        {
-            // Jump
-            animator.SetTrigger("JumpUp");
-        } else
-        {
-            // Drop
-            animator.SetTrigger("JumpDown");
-        }
-    }
-
-    private void ChaseAction_OnChangedFloorsStarted(object sender, ChaseAction.OnChangeFloorsStartedEventArgs e)
     {
         if (e.targetGridPosition.floor > e.unitGridPosition.floor)
         {

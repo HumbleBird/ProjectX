@@ -206,7 +206,7 @@ public class Pathfinding : MonoBehaviour
         return gridSystemList[floor];
     }
 
-    private PathNode GetNode(int x, int z, int floor)
+    public PathNode GetNode(int x, int z, int floor)
     {
         return GetGridSystem(floor).GetGridObject(new GridPosition(x, z, floor));
     }

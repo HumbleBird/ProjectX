@@ -45,10 +45,13 @@ public class BaseStat : ScriptableObject
     public int m_iMaxMP ;     // 최대 마나
     public int m_iCurrentMP ; // 현재 마나
 
-    public float m_fMoveSpeed ; // 이동 속도
+    public float m_fMoveSpeed ; //   기본 이동 속도
+    public float m_fChaseSpeed ; //  정찰 이동 속도
+    public float m_fPatrolSpeed ; // 추격 이동 속도
 
     public int m_iMaxAttackRange; // 최대 공격 범위
     public int m_iMinAttackRange; // 최소 공격 범위 (레인저의 경우 근접 타일을 공격 못 한다)
+    public int m_iDefaultMoveRange; // 기본 이동 거리
     public int m_iDetectRange; // 감지 거리
     public int m_iChaseRange; // 추격 거리
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ public class LevelGrid : MonoBehaviour
     public event EventHandler<OnAnyUnitMovedGridPositionEventArgs> OnAnyUnitMovedGridPosition;
     public class OnAnyUnitMovedGridPositionEventArgs : EventArgs
     {
-        public Unit unit;
+        public BaseObject unit;
         public GridPosition fromGridPosition;
         public GridPosition toGridPosition;
     }
@@ -28,7 +29,6 @@ public class LevelGrid : MonoBehaviour
     
     private List<GridSystem<GridObject>> gridSystemList;
     private Dictionary<GridPosition, bool> reserveGirdPosition = new Dictionary<GridPosition, bool>();
-
 
     private void Awake()
     {
@@ -81,7 +81,7 @@ public class LevelGrid : MonoBehaviour
         gridObject.RemoveUnit(baseObject);
     }
 
-    public void UnitMovedGridPosition(Unit unit, GridPosition fromGridPosition, GridPosition toGridPosition)
+    public void UnitMovedGridPosition(BaseObject unit, GridPosition fromGridPosition, GridPosition toGridPosition)
     {
         RemoveUnitAtGridPosition(fromGridPosition, unit);
 
@@ -202,12 +202,26 @@ public class LevelGrid : MonoBehaviour
         return false;
     }
 
+    public bool IsTargeSoFarAtChase(GridPosition gridPosition, GridPosition targetPosition)
+    {
+        BaseObject attacker = GetUnitAtGridPosition(gridPosition);
+
+        int pos = gridPosition.x - targetPosition.x + gridPosition.z - targetPosition.z;
+        if (attacker.m_StatSystem.m_Stat.m_iChaseRange <= pos)
+            return true;
+
+        return false;
+    }
+
     public void SetReserveGridPosition(GridPosition gridPosition, bool isReserve)
     {
         if (reserveGirdPosition.TryGetValue(gridPosition, out bool result) == false)
             reserveGirdPosition.Add(gridPosition, isReserve);
         else
             reserveGirdPosition[gridPosition] = isReserve;
+
+        PathNode node = Pathfinding.Instance.GetNode(gridPosition.x, gridPosition.z, gridPosition.floor);
+        node.SetIsWalkable(!isReserve);
     }
 
     public bool GetReservedGridPosition(GridPosition gridPosition)

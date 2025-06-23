@@ -1,126 +1,55 @@
-Ôªøusing System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using static Define;
 
-public class ChaseAction : BaseAction
+public class ChaseAction : MoveAction
 {
-    public const int AVALIABLE_MOVE_Grid = 3;
-    public const int ADJACENT_Grid = 3;
-
-    public event EventHandler OnStartMoving;
-    public event EventHandler OnStopMoving;
-    public event EventHandler<OnChangeFloorsStartedEventArgs> OnChangedFloorsStarted;
-    public class OnChangeFloorsStartedEventArgs : EventArgs
+    protected override void Awake()
     {
-        public GridPosition unitGridPosition;
-        public GridPosition targetGridPosition;
+        base.Awake();
+
+        m_iMaxMoveDistance = m_StatSystem.m_Stat.m_iChaseRange;
+        m_fMoveSpeed = m_StatSystem.m_Stat.m_fChaseSpeed;
     }
-
-    public int isOrder = 0;
-
-    int maxMoveDistance => m_StatSystem.m_Stat.m_iChaseRange;
-
-    private List<Vector3> positionList;
-    private int currentPositionIndex;
-    private bool isChangingFloors;
-    private float differentFloorsTeleportTimer;
-    private float differentFloorsTeleportTimerMax = .5f;
-    private int m_iReaminPathCount;
-
-    private void Update()
-    {
-        if (!isActive)
-        {
-            return;
-        }
-
-        Vector3 targetPosition = positionList[currentPositionIndex];
-
-        if (isChangingFloors)
-        {
-            // Stop and Teleport Logic
-            Vector3 targetSameFloorPosition = targetPosition;
-            targetSameFloorPosition.y = m_BaseObject.transform.position.y;
-
-            Vector3 rotateDirection = (targetSameFloorPosition - m_BaseObject.transform.position).normalized;
-
-            float rotateSpeed = 10f;
-            m_BaseObject.transform.forward = Vector3.Slerp(m_BaseObject.transform.forward, rotateDirection, Time.deltaTime * rotateSpeed);
-
-            differentFloorsTeleportTimer -= Time.deltaTime;
-            if (differentFloorsTeleportTimer < 0f)
-            {
-                isChangingFloors = false;
-                m_BaseObject.transform.position = targetPosition;
-            }
-        }
-        else
-        {
-            // Regular move logic
-            Vector3 moveDirection = (targetPosition - m_BaseObject.transform.position).normalized;
-
-            float rotateSpeed = 10f;
-            m_BaseObject.transform.forward = Vector3.Slerp(m_BaseObject.transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
-
-            float moveSpeed = m_StatSystem.m_Stat.m_fMoveSpeed;
-            m_BaseObject.transform.position += moveDirection * moveSpeed * Time.deltaTime;
-        }
-
-        float stoppingDistance = .1f;
-        if (Vector3.Distance(m_BaseObject.transform.position, targetPosition) < stoppingDistance)
-        {
-            // Reserver False
-            LevelGrid.Instance.SetReserveGridPosition(LevelGrid.Instance.GetGridPosition(targetPosition), false);
-
-            currentPositionIndex++;
-            if (currentPositionIndex >= positionList.Count)
-            {
-                if(m_iReaminPathCount ==0)
-                {
-                    OnStopMoving?.Invoke(this, EventArgs.Empty);
-
-                }
-                ActionComplete();
-            }
-            else
-            {
-                targetPosition = positionList[currentPositionIndex];
-                GridPosition targetGridPosition = LevelGrid.Instance.GetGridPosition(targetPosition);
-                GridPosition unitGridPosition = LevelGrid.Instance.GetGridPosition(m_BaseObject.transform.position);
-
-                if (targetGridPosition.floor != unitGridPosition.floor)
-                {
-                    // Different floors
-                    isChangingFloors = true;
-                    differentFloorsTeleportTimer = differentFloorsTeleportTimerMax;
-
-                    OnChangedFloorsStarted?.Invoke(this, new OnChangeFloorsStartedEventArgs
-                    {
-                        unitGridPosition = unitGridPosition,
-                        targetGridPosition = targetGridPosition,
-                    });
-                }
-            }
-        }
-    }
-
 
     public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        if (isActive)
-            return this;
+        // <øπø‹ªÁ«◊>
+        // ≈∏∞Ÿ ªÁ∏¡
+        // ≈∏∞Ÿ æ¯¿Ω
+        // ≈∏∞Ÿ ∞≈∏Æ∞° ∏ÿ
+        if (m_Target == null ||
+            m_Target.m_StatSystem.m_IsDead ||
+            LevelGrid.Instance.IsTargeSoFarAtChase(m_BaseObject.GetGridPosition(), m_Target.GetGridPosition()))
+        {
+            m_Target = null;
+
+            List<GridPosition> NewdetectedPositions = GetValidActionGridPositionList();
+
+            if (NewdetectedPositions.Count > 0)
+            {
+                // ∞°¿Â ∞°±ÓøÓ ¿˚¿« GridPosition¿ª ∞°¡Æø»
+                GridPosition targetGridPosition =
+                    LevelGrid.Instance.GetClosestTargetGridPosition(m_BaseObject.GetGridPosition(), NewdetectedPositions);
+                BaseObject target = LevelGrid.Instance.GetUnitAtGridPosition(targetGridPosition);
+                SetTarget(target);
+            }
+            else
+                return m_BaseObject.GetAction<IdleAction>();
+        }
+
+        if (m_Target == null)
+            return m_BaseObject.GetAction<IdleAction>();
 
         #region Find Close New Enemy
         GridPosition baseObjectGirdPosition = m_BaseObject.GetGridPosition();
         GridPosition targetPosition = m_Target.GetGridPosition();
 
-        // ÌòÑÏû¨ Í∑∏Î¶¨Îìú ÎÇ¥ÏóêÏÑú ÏÉàÎ°≠Í≤å Ï†ÅÏùÑ ÌÉêÏÉàÌï®.
+        // «ˆ¿Á ±◊∏ÆµÂ ≥ªø°º≠ ªı∑”∞‘ ¿˚¿ª ≈Ωªı«‘.
         List<GridPosition> detectedPositions = GetValidActionGridPositionList();
 
-        // ÏÉàÎ°ú Î∞úÍ≤¨Ìïú Í∞ÄÏû• Í∞ÄÍπåÏö¥ Ï†ÅÏù¥ ÌòÑÏû¨ ÌÉÄÍ≤üÎ≥¥Îã§ Í∞ÄÍπùÎã§Î©¥ Î≥ÄÍ≤Ω
+        // ªı∑Œ πﬂ∞ﬂ«— ∞°¿Â ∞°±ÓøÓ ¿˚¿Ã «ˆ¿Á ≈∏∞Ÿ∫∏¥Ÿ ∞°±ı¥Ÿ∏È ∫Ø∞Ê
         if (detectedPositions.Count > 0)
         {
             GridPosition newtargetGridPosition = LevelGrid.Instance.GetClosestTargetGridPosition(m_BaseObject.GetGridPosition(), detectedPositions);
@@ -134,38 +63,31 @@ public class ChaseAction : BaseAction
 
         #endregion
 
-
-        // Í≥µÍ≤© Î≤îÏúÑ ÏïàÏóê ÏûàÎã§Î©¥ Í≥µÍ≤©
+        // ∞¯∞› π¸¿ß æ»ø° ¿÷¥Ÿ∏È ∞¯∞›
         if (LevelGrid.Instance.IsTargetInAttackRange(baseObjectGirdPosition, targetPosition))
         {
             return m_BaseObject.GetAction<CombatAction>();
         }
-        // Í≥µÍ≤© Î≤îÏúÑ Î∞ñÏóê ÏûàÎã§Î©¥ Ïù¥Îèô
+        // ∞¯∞› π¸¿ß π€ø° ¿÷¥Ÿ∏È ¿Ãµø
         else
         {
             // Find Path
             List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(m_BaseObject.GetGridPosition(), targetPosition, out int pathLength);
 
+            // Remove Eenemy Grid Position
+            pathGridPositionList.RemoveAt(pathGridPositionList.Count - 1);
+            DestGirdPosition = pathGridPositionList[pathGridPositionList.Count - 1]; // ¿˚ πŸ∑Œ æ’ø°º≠ ∏ÿ√„
+
             currentPositionIndex = 0;
             positionList = new List<Vector3>();
-            m_iReaminPathCount = pathGridPositionList.Count - AVALIABLE_MOVE_Grid; // Except Start Pos, Des Pos, last Pos 
 
-            // Ïù¥Îèô Í±∞Î¶¨Í∞Ä ÎÇ®ÏïÑ ÏûàÎã§Î©¥
-            if (pathGridPositionList.Count >= AVALIABLE_MOVE_Grid)
+            // ¿Ãµø ∞≈∏Æ∞° ≥≤æ∆ ¿÷¥Ÿ∏È
+            if (pathGridPositionList.Count >= AVALIABLE_MOVE_GRID)
             {
-                if (LevelGrid.Instance.GetReservedGridPosition(pathGridPositionList[1]))
-                {
-                    OnStopMoving?.Invoke(this, EventArgs.Empty);
-                    ActionComplete();
-                    return this;
-                }
-                else
-                {
-                    LevelGrid.Instance.SetReserveGridPosition(pathGridPositionList[1], true);
-                    positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPositionList[1]));
-                    OnStartMoving?.Invoke(this, EventArgs.Empty);
-                    ActionStart(onActionComplete);
-                }
+                LevelGrid.Instance.SetReserveGridPosition(pathGridPositionList[1], true);
+                positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPositionList[1]));
+                InvokeOnStartMoving();
+                ActionStart(onActionComplete);
             }
 
             return this;
@@ -173,27 +95,17 @@ public class ChaseAction : BaseAction
     }
 
 
-    public override string GetActionName()
-    {
-        return "Move";
-    }
-
-    public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
-    {
-        throw new NotImplementedException();
-    }
-
     public override List<GridPosition> GetValidActionGridPositionList()
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
 
         GridPosition unitGridPosition = m_BaseObject.GetGridPosition();
 
-        for (int x = -maxMoveDistance; x <= maxMoveDistance; x++)
+        for (int x = -m_iMaxMoveDistance; x <= m_iMaxMoveDistance; x++)
         {
-            for (int z = -maxMoveDistance; z <= maxMoveDistance; z++)
+            for (int z = -m_iMaxMoveDistance; z <= m_iMaxMoveDistance; z++)
             {
-                for (int floor = -maxMoveDistance; floor <= maxMoveDistance; floor++)
+                for (int floor = -m_iMaxMoveDistance; floor <= m_iMaxMoveDistance; floor++)
                 {
                     GridPosition offsetGridPosition = new GridPosition(x, z, floor);
                     GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
@@ -227,8 +139,14 @@ public class ChaseAction : BaseAction
                         continue;
                     }
 
+                    // ¿ÃπÃ µÓ∑œ«— ≈∏∞Ÿ¿« ¿ßƒ° ¡¶ø‹
+                    if (m_Target != null && m_Target.GetGridPosition() == testGridPosition)
+                    {
+                        continue;
+                    }
+
                     int pathfindingDistanceMultiplier = 10;
-                    if (Pathfinding.Instance.GetPathLength(unitGridPosition, testGridPosition) > maxMoveDistance * pathfindingDistanceMultiplier)
+                    if (Pathfinding.Instance.GetPathLength(unitGridPosition, testGridPosition) > m_iMaxMoveDistance * pathfindingDistanceMultiplier)
                     {
                         // Path length is too long
                         continue;

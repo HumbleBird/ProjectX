@@ -2,8 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Define
+public partial class Define
 {
+    public enum E_MoveType
+    {
+        Basic,
+        Patrol,
+        Chase
+    }
 
     public enum E_DamageType
     {
