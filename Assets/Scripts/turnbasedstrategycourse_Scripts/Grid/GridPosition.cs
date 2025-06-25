@@ -2,7 +2,9 @@
 
 
 using System;
+using static Define;
 
+[System.Serializable]
 public struct GridPosition : IEquatable<GridPosition>
 {
     public int x;
@@ -59,12 +61,5 @@ public struct GridPosition : IEquatable<GridPosition>
         return new GridPosition(a.x - b.x, a.z - b.z, a.floor - b.floor);
     }
 
-    public static float GetGridDistanceSquared(GridPosition a, GridPosition b)
-    {
-        int dx = a.x - b.x;
-        int dz = a.z - b.z;
-        int df = a.floor - b.floor;
-        return dx * dx + dz * dz + df * df; // 3D 거리의 제곱 (정수 기반)
-        // return dx * dx + dz * dz + (df * floorWeight) * (df * floorWeight);
-    }
+
 }

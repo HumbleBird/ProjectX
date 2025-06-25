@@ -19,11 +19,11 @@ public class ChaseAction : MoveAction
         // 타겟 사망
         // 타겟 없음
         // 타겟 거리가 멈
-        if (m_Target == null ||
-            m_Target.m_StatSystem.m_IsDead ||
-            LevelGrid.Instance.IsTargeSoFarAtChase(m_BaseObject.GetGridPosition(), m_Target.GetGridPosition()))
+        if (m_BaseObject.m_Target == null ||
+            m_BaseObject.m_Target.m_StatSystem.m_IsDead ||
+            LevelGrid.Instance.IsTargeSoFarAtChase(m_BaseObject.GetGridPosition(), m_BaseObject.m_Target.GetGridPosition()))
         {
-            m_Target = null;
+            m_BaseObject.SetTarget(null);
 
             List<GridPosition> NewdetectedPositions = GetValidActionGridPositionList();
 
@@ -33,20 +33,20 @@ public class ChaseAction : MoveAction
                 GridPosition targetGridPosition =
                     LevelGrid.Instance.GetClosestTargetGridPosition(m_BaseObject.GetGridPosition(), NewdetectedPositions);
                 BaseObject target = LevelGrid.Instance.GetUnitAtGridPosition(targetGridPosition);
-                SetTarget(target);
+                m_BaseObject.SetTarget(target);
             }
             else
                 return m_BaseObject.GetAction<IdleAction>();
         }
 
-        if (m_Target == null)
+        if (m_BaseObject.m_Target == null)
             return m_BaseObject.GetAction<IdleAction>();
 
         #region Find Close New Enemy
         GridPosition baseObjectGirdPosition = m_BaseObject.GetGridPosition();
-        GridPosition targetPosition = m_Target.GetGridPosition();
+        GridPosition targetPosition = m_BaseObject.m_Target.GetGridPosition();
 
-        // 현재 그리드 내에서 새롭게 적을 탐새함.
+        // 현재 그리드 내에서 새롭게 적을 탐색함.
         List<GridPosition> detectedPositions = GetValidActionGridPositionList();
 
         // 새로 발견한 가장 가까운 적이 현재 타겟보다 가깝다면 변경
@@ -54,43 +54,60 @@ public class ChaseAction : MoveAction
         {
             GridPosition newtargetGridPosition = LevelGrid.Instance.GetClosestTargetGridPosition(m_BaseObject.GetGridPosition(), detectedPositions);
 
-            if (GridPosition.GetGridDistanceSquared(newtargetGridPosition, baseObjectGirdPosition)
-                < GridPosition.GetGridDistanceSquared(targetPosition, baseObjectGirdPosition))
-                m_Target = LevelGrid.Instance.GetUnitAtGridPosition(newtargetGridPosition);
+            if (LevelGrid.Instance.GetGridDistanceSquared_float(newtargetGridPosition, baseObjectGirdPosition)
+                < LevelGrid.Instance.GetGridDistanceSquared_float(targetPosition, baseObjectGirdPosition))
+                m_BaseObject.SetTarget(LevelGrid.Instance.GetUnitAtGridPosition(newtargetGridPosition));
         }
 
-        targetPosition = m_Target.GetGridPosition();
+        targetPosition = m_BaseObject.m_Target.GetGridPosition();
 
         #endregion
 
         // 공격 범위 안에 있다면 공격
-        if (LevelGrid.Instance.IsTargetInAttackRange(baseObjectGirdPosition, targetPosition))
+        if (LevelGrid.Instance.IsTargetInAttackRange(baseObjectGirdPosition, targetPosition) == E_Distance.Proper)
         {
             return m_BaseObject.GetAction<CombatAction>();
         }
         // 공격 범위 밖에 있다면 이동
-        else
+        else if (LevelGrid.Instance.IsTargetInAttackRange(baseObjectGirdPosition, targetPosition) == E_Distance.Far)
         {
             // Find Path
             List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(m_BaseObject.GetGridPosition(), targetPosition, out int pathLength);
 
-            // Remove Eenemy Grid Position
-            pathGridPositionList.RemoveAt(pathGridPositionList.Count - 1);
-            DestGirdPosition = pathGridPositionList[pathGridPositionList.Count - 1]; // 적 바로 앞에서 멈춤
-
-            currentPositionIndex = 0;
-            positionList = new List<Vector3>();
-
             // 이동 거리가 남아 있다면
+            // 직선
             if (pathGridPositionList.Count >= AVALIABLE_MOVE_GRID)
             {
-                LevelGrid.Instance.SetReserveGridPosition(pathGridPositionList[1], true);
-                positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPositionList[1]));
-                InvokeOnStartMoving();
-                ActionStart(onActionComplete);
+                pathGridPositionList.RemoveAt(pathGridPositionList.Count - 1); // 적 위치 제거
+                pathGridPositionList.RemoveAt(0); // 자신 위치 제거
+
+                if (pathGridPositionList.Count >= 1)
+                {
+                    DestGirdPosition = pathGridPositionList[pathGridPositionList.Count - 1]; // 적 바로 앞에서 멈춤
+                    currentPositionIndex = 0;
+                    positionList = new List<Vector3>();
+
+                    // Change Reserve
+                    if (PrevReservePosition != default)
+                        LevelGrid.Instance.SetReserveGridPosition(PrevReservePosition, false);
+
+                    PrevReservePosition = pathGridPositionList[0];
+
+                    LevelGrid.Instance.SetReserveGridPosition(pathGridPositionList[0], true);
+                    positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPositionList[0]));
+                    InvokeOnStartMoving();
+                    ActionStart(onActionComplete);
+                }
             }
 
+
             return this;
+        }
+        else
+        {
+            // TODO
+            // 적이 너무 가깝다면 거리를 벌린다.
+            return null;
         }
     }
 
@@ -140,7 +157,7 @@ public class ChaseAction : MoveAction
                     }
 
                     // 이미 등록한 타겟의 위치 제외
-                    if (m_Target != null && m_Target.GetGridPosition() == testGridPosition)
+                    if (m_BaseObject.m_Target != null && m_BaseObject.m_Target.GetGridPosition() == testGridPosition)
                     {
                         continue;
                     }

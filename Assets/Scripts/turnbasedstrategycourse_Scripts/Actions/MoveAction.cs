@@ -29,11 +29,12 @@ public class MoveAction : BaseAction
     protected float differentFloorsTeleportTimer;
     protected float differentFloorsTeleportTimerMax = .5f;
 
-        
-    
 
-    private void Update()
+
+    protected override void Update()
     {
+        base.Update();
+
         if (!isActive)
         {
             return;
@@ -89,22 +90,22 @@ public class MoveAction : BaseAction
             {
                 // TODO Change Floor
 
-                //targetPosition = positionList[currentPositionIndex];
-                //GridPosition targetGridPosition = LevelGrid.Instance.GetGridPosition(targetPosition);
-                //GridPosition unitGridPosition = LevelGrid.Instance.GetGridPosition(m_BaseObject.transform.position);
-                //
-                //if (targetGridPosition.floor != unitGridPosition.floor)
-                //{
-                //    // Different floors
-                //    isChangingFloors = true;
-                //    differentFloorsTeleportTimer = differentFloorsTeleportTimerMax;
-                //
-                //    OnChangedFloorsStarted?.Invoke(this, new OnChangeFloorsStartedEventArgs
-                //    {
-                //        unitGridPosition = unitGridPosition,
-                //        targetGridPosition = targetGridPosition,
-                //    });
-                //}
+                targetPosition = positionList[currentPositionIndex];
+                GridPosition targetGridPosition = LevelGrid.Instance.GetGridPosition(targetPosition);
+                GridPosition unitGridPosition = LevelGrid.Instance.GetGridPosition(m_BaseObject.transform.position);
+                
+                if (targetGridPosition.floor != unitGridPosition.floor)
+                {
+                    // Different floors
+                    isChangingFloors = true;
+                    differentFloorsTeleportTimer = differentFloorsTeleportTimerMax;
+                
+                    OnChangedFloorsStarted?.Invoke(this, new OnChangeFloorsStartedEventArgs
+                    {
+                        unitGridPosition = unitGridPosition,
+                        targetGridPosition = targetGridPosition,
+                    });
+                }
             }
         }
     }
@@ -169,7 +170,7 @@ public class MoveAction : BaseAction
                     }
 
                     // 이미 등록한 타겟의 위치 제외
-                    if(m_Target != null && m_Target.GetGridPosition() == testGridPosition)
+                    if(m_BaseObject.m_Target != null && m_BaseObject.m_Target.GetGridPosition() == testGridPosition)
                     {
                         continue;
                     }
@@ -203,4 +204,14 @@ public class MoveAction : BaseAction
     }
 
 
+    public override void ClearAction()
+    {
+        base.ClearAction();
+
+        if (PrevReservePosition != default)
+        {
+            LevelGrid.Instance.SetReserveGridPosition(PrevReservePosition, false);
+            PrevReservePosition = default;
+        }
+    }
 }

@@ -25,14 +25,13 @@ public class IdleAction : BaseAction
             GridPosition targetGridPosition = LevelGrid.Instance.GetClosestTargetGridPosition(m_BaseObject.GetGridPosition(), detectedPositions);
 
             // 타겟 객체 캐싱 (추후 PurseAction에서 사용)
-            ChaseAction chaseaction = m_BaseObject.GetAction<ChaseAction>();
             BaseObject target = LevelGrid.Instance.GetUnitAtGridPosition(targetGridPosition);
-            chaseaction.SetTarget(target);
+            m_BaseObject.SetTarget(target);
 
-            Debug.Log($"Detected Closet Enemy : {target.name}, Pos : {targetGridPosition}");
+            //Debug.Log($"Detected Closet Enemy : {target.name}, Pos : {targetGridPosition}");
 
             ActionComplete();
-            return chaseaction;
+            return m_BaseObject.GetAction<ChaseAction>();
         }
 
         ActionComplete();

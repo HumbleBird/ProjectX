@@ -41,6 +41,12 @@ public class UnitAnimator : MonoBehaviour
             swordAction.OnSwordActionStarted += SwordAction_OnSwordActionStarted;
             swordAction.OnSwordActionCompleted += SwordAction_OnSwordActionCompleted;
         }
+
+        if (actionTransform.TryGetComponent<CombatAction>(out CombatAction combatAction))
+        {
+            combatAction.OnStartAttack += CombatAction_OnStartAttack;
+            combatAction.OnEndAttack += CombatAction_OnEndAttack;
+        }
     }
 
     private void MoveAction_OnChangedFloorsStarted(object sender, MoveAction.OnChangeFloorsStartedEventArgs e)
@@ -109,6 +115,23 @@ public class UnitAnimator : MonoBehaviour
     {
         swordTransform.gameObject.SetActive(false);
         rifleTransform.gameObject.SetActive(true);
+    }
+
+    private void CombatAction_OnStartAttack(object sender, CombatAction.OnAttackStartedEventArge e)
+    {
+        if(e.attackType == Define.E_AttackType.Melee)
+        {
+            animator.SetTrigger("Melee");
+        }
+        else if (e.attackType == Define.E_AttackType.Ranged)
+        {
+            animator.SetTrigger("Ranged");
+        }
+    }
+
+    private void CombatAction_OnEndAttack(object sender, EventArgs e)
+    {
+
     }
 
 }

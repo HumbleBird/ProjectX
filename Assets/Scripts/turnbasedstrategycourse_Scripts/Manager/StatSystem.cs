@@ -8,7 +8,6 @@ using static Define;
 
 public class StatSystem : MonoBehaviour
 {
-
     public event EventHandler OnDead;
     public event EventHandler OnDamaged;
     public event EventHandler OnMPUsed;
@@ -31,7 +30,7 @@ public class StatSystem : MonoBehaviour
         mp = mpMax;
     }
 
-    public void Damage(int damageAmount)
+    public void ReduceHP(int damageAmount)
     {
         health -= damageAmount;
 
@@ -74,5 +73,4 @@ public class StatSystem : MonoBehaviour
     {
         return m_Stat.m_iMaxMP > 0;
     }
-
 }

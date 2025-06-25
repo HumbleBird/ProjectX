@@ -1,38 +1,8 @@
-﻿using UnityEditor;
+﻿using NUnit.Framework;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using static Define;
-
-#region Skill
-
-// Passive
-interface Attribute
-{
-
-}
-
-interface ISkill
-{
-    string Id { get; set; }
-    float cooldown { get; set; }
-    bool IsReady { get; set; }
-
-    void Initialize(BaseObject owner, SkillData data);
-    void Activate(BaseObject target); // 혹은 Vector3 position
-    void Update(float deltaTime);
-}
-
-class SkillData
-{
-
-}
-
-#endregion
-interface IUnitAbility
-{
-    void OnAttack(BaseObject target);
-    void OnTakeDamage(ref float damage, E_DamageType type);
-    void OnMove(Vector3 destination); 
-}
 
 public class BaseStat : ScriptableObject
 {
@@ -55,33 +25,20 @@ public class BaseStat : ScriptableObject
     public int m_iDetectRange; // 감지 거리
     public int m_iChaseRange; // 추격 거리
 
-    [Header("Damage")]
-    public int m_iPhysicalAttackDamage ;     // 물리 공격 데미지
-    public int m_iMagicAttackDamage ;        // 미밥 공격 데미지
-    public int m_iPhysicalFixedDamage ;      // 물리 고정 데미지
-    public int m_iMagicFixedDamage ;         // 마법 고정 데미지
-    public float m_fPhysicalArmorPenetraion;    // 물리 방어구 관통력
-    public float m_fMagicalArmorPenetraion;     // 마법 방어구 관통력
-
     [Header("Defence")]
     public int m_iPhysicalDefence; // 물리 방어력
-    public int m_iMagicalDefence ; // 마법 방어력
+    public int m_iMagicalDefence; // 마법 방어력
 
-    [Header("Battle Attack Chance")]
-    public float m_fCriticalChance ;     // 치명타율
-    public float m_fCriticalDamageUp ;   // 치명타 데미지 증가율
-    public float m_fEvasion ;            // 회피율
-    public float m_fCounterAttack ;      // 반격율
-    public float m_fAccuracy ;           // 명중률
-    public float m_fAttackSpeed ;        // 공격 속도
-    public float m_fKnockbackChance ;    // 넉백 확률
-    public float m_fKnockbackRegist ;    // 넉백 저확률
+
+
 
     [Header("Cost")]
     public int m_iSpawnCost; // 소환 비용 (아군 유닛일 때만)
     public int m_iRewardCost ; // 처치 보상 (적군 유닛일 때만)
 
-
+    [Header("Attack Pattern")]
+    public List<AttackPattern> attackPatterns = new List<AttackPattern>();
+    public List<Skill> Skills;                   // 연결된 스킬 (다단히트 or 이펙트 등)
 }
 
 

@@ -80,7 +80,6 @@ public class UnitActionSystem : MonoBehaviour
                         (u,a)=>
                         {
                             u.SwitchToNextState(u.GetAction<IdleAction>());
-                            Debug.Log("Player Command After Line");
                         });
                 }
             }
@@ -154,21 +153,6 @@ public class UnitActionSystem : MonoBehaviour
     {
         if (m_SelectedObjects.Count == 0)
             return;
-
-        //var units = m_SelectedObjects.Where(x => x.m_ObjectType == E_ObjectType.Unit).ToList() ;
-
-        //List<BaseAction> commonActionTypes = GetCommonActionTypes(units);
-
-        //// 기본 이동 선택
-        //// 유닛 + 건물 같이 선택 사항에서 이동 가능한 오브젝트만 이동 시키기
-        //MoveAction commonMoveAction = commonActionTypes
-        //    .FirstOrDefault(x => x is MoveAction) as MoveAction;
-
-        //if (commonMoveAction != null)
-        //{
-        //    SetSelectedAction(commonMoveAction);
-        //    m_SelectedActions = commonMoveAction;
-        //}
     }
 
     public List<BaseAction> GetCommonActionTypes(List<BaseObject> selectedUnits)

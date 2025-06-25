@@ -16,7 +16,6 @@ public abstract class BaseAction : MonoBehaviour
     protected LayerMask detectionLayer;
     protected LayerMask layerThatBlockLineOfSight;
 
-    protected BaseObject m_Target;
 
     public GridPosition DestGirdPosition;
 
@@ -27,6 +26,11 @@ public abstract class BaseAction : MonoBehaviour
 
         detectionLayer = 1 << LayerMask.NameToLayer("Units") | 1 << LayerMask.NameToLayer("Building");
         layerThatBlockLineOfSight = 1 << LayerMask.NameToLayer("Obstacles");
+    }
+
+    protected virtual void Update()
+    {
+
     }
 
     public abstract string GetActionName();
@@ -96,14 +100,16 @@ public abstract class BaseAction : MonoBehaviour
     public abstract EnemyAIAction GetEnemyAIAction(GridPosition gridPosition);
 
 
-    public virtual void SetTarget(BaseObject target)
-    {
-        m_Target = target;
-    }
+
 
     public void CancelReverveGridPosition()
     {
         LevelGrid.Instance.SetReserveGridPosition(DestGirdPosition, false);
+    }
+
+    public virtual void ClearAction()
+    {
+
     }
 
 }

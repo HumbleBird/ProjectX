@@ -18,8 +18,17 @@ public class BaseObject : MonoBehaviour
 
     [Header("Action")]
     private Dictionary<Type, BaseAction> baseActionDict = new Dictionary<Type, BaseAction>();
-    [SerializeField] protected BaseAction m_CurrentAction;
+    [SerializeField] private BaseAction currentAction;
+    public BaseAction m_CurrentAction
+    {
+        get => currentAction;
+        protected set => currentAction = value;
+    }
+
     [SerializeField] protected BaseAction m_BeforeAction;
+
+    [Header("Battle Info")]
+    public BaseObject m_Target { get; protected set; }
 
     [Header("Player DirectCommand")]
     public bool IsPlayerControlled { get; private set; } = false;
@@ -88,6 +97,7 @@ public class BaseObject : MonoBehaviour
 
     private void ExecuteAction()
     {
+        m_CurrentAction.ClearAction();
         var nextAction = m_CurrentAction?.TakeAction();
 
         if (nextAction != null)
@@ -142,9 +152,17 @@ public class BaseObject : MonoBehaviour
         return gridPosition;
     }
 
-    public void Damage(int damageAmount)
+    public void Hit(AttackBase attack)
     {
-        m_StatSystem.Damage(damageAmount);
+        // 크리티컬
+
+        // 회피율
+
+        // 반격율
+
+        // 기타 등등 적용하기
+
+        m_StatSystem.ReduceHP(attack.m_iPhysicalAttackDamage);
     }
 
 
@@ -168,5 +186,10 @@ public class BaseObject : MonoBehaviour
         {
             action.SetActionComlete(() => onActionComplete?.Invoke(this, typedAction));
         }
+    }
+
+    public virtual void SetTarget(BaseObject target)
+    {
+        m_Target = target;
     }
 }

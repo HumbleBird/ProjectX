@@ -4,6 +4,31 @@ using UnityEngine;
 
 public partial class Define
 {
+    public enum E_Distance
+    {
+        Far, // 공격 범위보다 너무 멀다
+        Close, // 공격 범위보다 너무 가깝다
+        Proper  // 공격 범위에 딱 들어맞다.
+    }
+
+    public enum E_Dir
+    {
+        North,
+        NorthEast,
+        NorthWest,
+        East,
+        South,
+        SouthEast,
+        SouthWest,
+        West
+    }
+
+    public enum E_AttackType
+    {
+        Melee,     // 근접 공격
+        Ranged,    // 원거리 공격
+    }
+
     public enum E_MoveType
     {
         Basic,

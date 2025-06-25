@@ -100,7 +100,7 @@ public class ShootAction : BaseAction
             shootingUnit = m_BaseObject
         });
         
-        targetUnit.Damage(40);
+        //targetUnit.Hit(40);
     }
 
 
