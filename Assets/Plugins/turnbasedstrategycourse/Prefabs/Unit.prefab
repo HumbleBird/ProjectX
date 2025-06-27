@@ -52,6 +52,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42567d9db8c8c3745a3275aee2b02c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
 --- !u!114 &2916048946570637061
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,6 +68,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4c39c031c5375a46ae599db0d5b38fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
   obstaclesLayerMask:
     serializedVersion: 2
     m_Bits: 320
@@ -79,6 +87,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 701acd2fe1651b341b339b6d0472a804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
   grenadeProjectilePrefab: {fileID: 7199486389438415501, guid: b242d68e18d28e64c87187d1f697f03a, type: 3}
 --- !u!114 &1497909056568665922
 MonoBehaviour:
@@ -92,6 +104,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497b1af98a70f0443a89915e2ec27888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
 --- !u!114 &5728821994065854445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,6 +120,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df022b5ff97b9b342b3be3521283a4a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
 --- !u!114 &8800124889752672328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116,6 +136,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e442f95286a2004479034324059618d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
 --- !u!114 &7998742723547615365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,6 +152,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61a3ab1f1bc11094e8b5841ef4d8ca1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
 --- !u!114 &4482401984743386596
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +168,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fee245263412374a8461df4a7703f05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
 --- !u!114 &2203006300540953542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,6 +184,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddcf6a55480f1604cb4f6682b70435d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestGirdPosition:
+    x: 0
+    z: 0
+    floor: 0
+  m_rotateTick: 0.1
+  rotateSpeed: 70
 --- !u!1 &800819983115170634
 GameObject:
   m_ObjectHideFlags: 0
@@ -1016,8 +1054,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isEnemy: 0
   m_ObjectType: 1
-  m_CurrentAction: {fileID: 0}
+  currentAction: {fileID: 0}
   m_BeforeAction: {fileID: 0}
+  m_CommandAction: {fileID: 0}
 --- !u!65 &7313912752346062244
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1070,7 +1109,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Stat: {fileID: 11400000, guid: b197b4005a017f74a977e5505e8d1fc2, type: 2}
-  m_AttackType: 0
 --- !u!114 &-2044145914545918145
 MonoBehaviour:
   m_ObjectHideFlags: 0

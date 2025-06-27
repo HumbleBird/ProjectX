@@ -21,30 +21,21 @@ MonoBehaviour:
   m_fMoveSpeed: 4
   m_fChaseSpeed: 4
   m_fPatrolSpeed: 4
-  m_iMaxAttackRange: 1
-  m_iMinAttackRange: 0
+  m_iMaxAttackRange:
+    x: 0
+    z: 1
+    floor: 0
+  m_iMinAttackRange:
+    x: 0
+    z: 0
+    floor: 0
   m_iDefaultMoveRange: 4
   m_iDetectRange: 5
   m_iChaseRange: 5
-  m_iPhysicalAttackDamage: 0
-  m_iMagicAttackDamage: 0
-  m_iPhysicalFixedDamage: 0
-  m_iMagicFixedDamage: 0
-  m_fPhysicalArmorPenetraion: 0
-  m_fMagicalArmorPenetraion: 0
   m_iPhysicalDefence: 0
   m_iMagicalDefence: 0
-  m_fCriticalChance: 0
-  m_fCriticalDamageUp: 0
-  m_fEvasion: 0
-  m_fCounterAttack: 0
-  m_fAccuracy: 0
-  m_fAttackSpeed: 0
-  m_fKnockbackChance: 0
-  m_fKnockbackRegist: 0
   m_iSpawnCost: 0
   m_iRewardCost: 0
   attackPatterns:
   - {fileID: 11400000, guid: f114e97102baa1c49b37194d6c0ee8dd, type: 2}
-  - {fileID: 11400000, guid: be95ff48bc8be57478c72151cc5cbe96, type: 2}
   Skills: []

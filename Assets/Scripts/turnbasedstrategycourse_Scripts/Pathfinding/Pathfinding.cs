@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.TerrainTools;
 using UnityEngine;
 
 public class Pathfinding : MonoBehaviour
@@ -150,11 +151,25 @@ public class Pathfinding : MonoBehaviour
                     continue;
                 }
 
-                if (!neighbourNode.IsWalkable())
+                bool isStart = neighbourNode == startNode;
+                bool isEnd = neighbourNode == endNode;
+                bool isReserved = LevelGrid.Instance.IsReservedGridPosition(neighbourNode.GetGridPosition());
+
+                // 1. Walkable이 아니고 시작/도착도 아니면 제외
+                if (!neighbourNode.IsWalkable() && !isStart && !isEnd)
                 {
                     closedList.Add(neighbourNode);
                     continue;
                 }
+
+                // 2. 예약된 칸인데 시작/도착이 아니면 제외
+                if (isReserved && !isStart && !isEnd)
+                {
+                    closedList.Add(neighbourNode);
+                    continue;
+                }
+
+
 
                 int tentativeGCost = 
                     currentNode.GetGCost() + CalculateDistance(currentNode.GetGridPosition(), neighbourNode.GetGridPosition());

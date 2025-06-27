@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\uC804\uBC29 1\uCE78, \uC591 \uC606 2\uCE78 \uACF5\uACA9"
   m_EditorClassIdentifier: 
   ID: 2
-  AttackName: "\uC804\uBC29 1\uCE78 \uACF5\uACA9"
+  AttackName: "\uC804\uBC29 1\uCE78, \uC591 \uC606 2\uCE78 \uACF5\uACA9"
   m_RangeOffset:
   - x: 0
     z: 1
@@ -24,7 +24,21 @@ MonoBehaviour:
   - x: -1
     z: 1
     floor: 0
-  m_iCoolTime: 0
+  m_iCoolTime: 1
   attackType: 0
   m_bIsCanCombo: 0
   m_iNextAttackPatternID: 0
+  m_iPhysicalAttackDamage: 0
+  m_iMagicAttackDamage: 0
+  m_iPhysicalFixedDamage: 0
+  m_iMagicFixedDamage: 0
+  m_fPhysicalArmorPenetraion: 0
+  m_fMagicalArmorPenetraion: 0
+  m_fCriticalChance: 0
+  m_fCriticalDamageUp: 0
+  m_fEvasion: 0
+  m_fCounterAttack: 0
+  m_fAccuracy: 0
+  m_fAttackSpeed: 0
+  m_fKnockbackChance: 0
+  m_fKnockbackRegist: 0

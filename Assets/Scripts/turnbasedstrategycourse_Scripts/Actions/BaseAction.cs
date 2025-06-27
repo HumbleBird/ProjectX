@@ -8,6 +8,15 @@ public abstract class BaseAction : MonoBehaviour
     public static event EventHandler OnAnyActionStarted;
     public static event EventHandler OnAnyActionCompleted;
 
+    // 그리드 이동에 관한 이벤트
+    public static event EventHandler<OnChangeMoveGridEventArgs> OnMoveGridPositionStarted;
+    public static event EventHandler<OnChangeMoveGridEventArgs> OnMoveGridPositionCompleted;
+
+    public class OnChangeMoveGridEventArgs : EventArgs
+    {
+        public BaseObject obj;
+    }
+
     protected Unit m_BaseObject;
     protected StatSystem m_StatSystem;
     protected bool isActive;
@@ -16,8 +25,9 @@ public abstract class BaseAction : MonoBehaviour
     protected LayerMask detectionLayer;
     protected LayerMask layerThatBlockLineOfSight;
 
-
+    [Header("Grid Position")]
     public GridPosition DestGirdPosition;
+
 
     protected virtual void Awake()
     {
@@ -26,9 +36,22 @@ public abstract class BaseAction : MonoBehaviour
 
         detectionLayer = 1 << LayerMask.NameToLayer("Units") | 1 << LayerMask.NameToLayer("Building");
         layerThatBlockLineOfSight = 1 << LayerMask.NameToLayer("Obstacles");
+
+        OnMoveGridPositionStarted += LevelGrid.Instance.OnMoveStartGrid;
+        OnMoveGridPositionCompleted += LevelGrid.Instance.OnMoveCompletedGrid;
+    }
+
+    protected virtual void Start()
+    {
+
     }
 
     protected virtual void Update()
+    {
+
+    }
+
+    public virtual void StartInitFromObject()
     {
 
     }
@@ -60,6 +83,16 @@ public abstract class BaseAction : MonoBehaviour
         onActionComplete?.Invoke();
 
         OnAnyActionCompleted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void OnStartMoveGrid()
+    {
+        OnMoveGridPositionStarted?.Invoke(this, new OnChangeMoveGridEventArgs { obj = m_BaseObject});
+    }
+
+    public void OnCompletedMoveGrid()
+    {
+       OnMoveGridPositionCompleted?.Invoke(this, new OnChangeMoveGridEventArgs { obj = m_BaseObject });
     }
 
     public void SetActionComlete(Action onActionComplete)
@@ -99,15 +132,7 @@ public abstract class BaseAction : MonoBehaviour
 
     public abstract EnemyAIAction GetEnemyAIAction(GridPosition gridPosition);
 
-
-
-
-    public void CancelReverveGridPosition()
-    {
-        LevelGrid.Instance.SetReserveGridPosition(DestGirdPosition, false);
-    }
-
-    public virtual void ClearAction()
+    public virtual void ClearAction(BaseAction TOODAction)
     {
 
     }

@@ -11,7 +11,7 @@ public class BaseObject : MonoBehaviour
     public static event EventHandler OnAnyUnitDead;
 
     [Header("Object Info")]
-    protected GridPosition gridPosition;
+    public GridPosition gridPosition; 
     public StatSystem m_StatSystem { get; protected set; }
     [SerializeField] protected bool isEnemy;
     public E_ObjectType m_ObjectType;
@@ -26,13 +26,10 @@ public class BaseObject : MonoBehaviour
     }
 
     [SerializeField] protected BaseAction m_BeforeAction;
+    [SerializeField] public BaseAction m_CommandAction;
 
     [Header("Battle Info")]
     public BaseObject m_Target { get; protected set; }
-
-    [Header("Player DirectCommand")]
-    public bool IsPlayerControlled { get; private set; } = false;
-    private Queue<Action> followUpCommands = new();
 
     [Header("Check Timer")]
     float checkInterval = 0.5f;
@@ -44,6 +41,7 @@ public class BaseObject : MonoBehaviour
      
         foreach (var action in GetComponentsInChildren<BaseAction>())
               baseActionDict[action.GetType()] = action;
+
     }
 
     protected virtual void Start()
@@ -59,6 +57,12 @@ public class BaseObject : MonoBehaviour
         SwitchToNextState(GetAction<IdleAction>());
 
         OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
+
+        // Object가 먼저 처리해야 할 것들.
+        foreach (var action in baseActionDict.Values)
+        {
+            action.StartInitFromObject();
+        }
     }
 
     protected virtual void Update()
@@ -66,7 +70,6 @@ public class BaseObject : MonoBehaviour
         HandleStateMachine();
         UpdateGridPosition();
     }
-
 
     private  void UpdateGridPosition()
     {
@@ -97,11 +100,29 @@ public class BaseObject : MonoBehaviour
 
     private void ExecuteAction()
     {
-        m_CurrentAction.ClearAction();
-        var nextAction = m_CurrentAction?.TakeAction();
+        if (m_CommandAction != null)
+        {
+            Debug.Log($"Player Input Command : {m_CurrentAction.GetActionName() } -> {m_CommandAction.GetActionName()}");
 
-        if (nextAction != null)
-            SwitchToNextState(nextAction);
+            m_CurrentAction.ClearAction(m_CommandAction);
+            m_CurrentAction = m_CommandAction;
+            m_CommandAction = null;
+
+            m_CurrentAction?.TakeAction();
+        }
+        else
+        {
+            var nextAction = m_CurrentAction?.TakeAction();
+
+            if (nextAction is not null && nextAction != m_CurrentAction)
+            {
+                Debug.Log($"Action Change : {m_CurrentAction.GetActionName()} -> {nextAction.GetActionName()}");
+
+                m_CurrentAction.ClearAction(nextAction);
+                SwitchToNextState(nextAction);
+            }
+        }
+
     }
 
     public void SwitchToNextState(BaseAction nextAction)
@@ -180,7 +201,7 @@ public class BaseObject : MonoBehaviour
     public void DirectCommand<TAction>(BaseAction action, Action<BaseObject, TAction> onActionComplete) where TAction : BaseAction
     {
         m_BeforeAction = m_CurrentAction;
-        m_CurrentAction = action;
+        m_CommandAction = action;
 
         if (action is TAction typedAction)
         {

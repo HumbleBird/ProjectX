@@ -22,12 +22,20 @@ public class CombatAction : BaseAction
     Func<bool> conditionPase;
     bool isChaningPase;
     float coolTick;
+    float timer = 0;
+    [SerializeField] float m_rotateTick = 0.1f;
+    [SerializeField] float rotateSpeed = 70;
+
+    BaseAction m_TODOChangeAction;
 
     protected override void Update()
     {
         base.Update();
         
         if (m_BaseObject.m_CurrentAction != this)
+            return;
+
+        if (RotateTowardTarget() == false)
             return;
 
         // 1. 유닛이 특수 상태일 경우 페이즈 전환 (예: 2페이즈 보스)
@@ -49,18 +57,14 @@ public class CombatAction : BaseAction
             return;
         }
 
-        // 3.2 Distance
-        // TODO Change
-        var distance = LevelGrid.Instance.IsTargetInAttackRange(target.GetGridPosition(), m_BaseObject.GetGridPosition());
-
-        if (distance == E_Distance.Far)
-            return;
 
         // Set Attack Pattern
         AttackPattern attackPattern = SelectAttackPattern();
 
         if (attackPattern == null)
         {
+            // 현재 위치에서 공격할 수 있는 공격이 없음.
+            m_TODOChangeAction = m_BaseObject.GetAction<ChaseAction>();
             Debug.Log($"m_ThisAttackPattern is Nul!!!!");
             return;
         }
@@ -78,37 +82,56 @@ public class CombatAction : BaseAction
         UpdateAttackCooldown(attackPattern);
     }
 
+    private bool RotateTowardTarget()
+    {
+        var target = m_BaseObject.m_Target;
+        if (target == null)
+            return false;
+
+        // 타겟 방향 계산
+        Vector3 moveDirection = (target.transform.position - m_BaseObject.transform.position).normalized;
+
+        // 회전 완료 여부 판단
+        float angleThreshold = 5f; // 허용 오차 각도 (예: 5도)
+        float angle = Vector3.Angle(m_BaseObject.transform.forward, moveDirection);
+
+        if (angle < angleThreshold)
+        {
+            return true;
+        }
+        else
+        {
+            timer -= Time.deltaTime;
+            if(timer <= 0)
+            {
+                timer = m_rotateTick;
+
+                // 회전
+                m_BaseObject.transform.forward = Vector3.Slerp(
+                    m_BaseObject.transform.forward,
+                    moveDirection,
+                    Time.deltaTime * rotateSpeed
+                );
+            }
+
+            return false;
+        }
+    }
+
 
     public override BaseAction TakeAction(GridPosition gridPosition = default, Action onActionComplete = null)
     {
-        var target = m_BaseObject.m_Target;
-
-        if (target == null || target.m_StatSystem.m_IsDead)
-        {
+        if (m_BaseObject.m_Target == null || m_BaseObject.m_Target.m_StatSystem.m_IsDead)
             return m_BaseObject.GetAction<IdleAction>();
-        }
 
-        // UpdateRotationDirToTarget
-        
-        // Regular move logic
-        Vector3 moveDirection = (target.transform.position - m_BaseObject.transform.position).normalized;
-
-        float rotateSpeed = 10f;
-        m_BaseObject.transform.forward = Vector3.Slerp(m_BaseObject.transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
-
-        // 공격 범위 안에 있다면 공격
-        if (LevelGrid.Instance.IsTargetInAttackRange(m_BaseObject.GetGridPosition(), target.GetGridPosition()) == E_Distance.Proper)
+        if(m_TODOChangeAction != null)
         {
-            // Todo Check
-            // 최소 공격 거리 안쪽보다 있으면 거리 벌려주기
-            return this;
-        }
-        else if (LevelGrid.Instance.IsTargetInAttackRange(m_BaseObject.GetGridPosition(), target.GetGridPosition()) == E_Distance.Proper)
-        {
-            return m_BaseObject.GetAction<ChaseAction>();
+            BaseAction ac = m_TODOChangeAction;
+            m_TODOChangeAction = null;
+            return ac;
         }
         else
-            return null;
+            return this;
     }
 
     public override string GetActionName()

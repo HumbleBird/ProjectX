@@ -7,35 +7,24 @@ using UnityEngine;
 
 public class IdleAction : BaseAction
 {
-    // TODO 
-    // 시야 시스템, 나중에 앞에 있는지 여부 
-
     int m_iDetectRange => m_StatSystem.m_Stat.m_iDetectRange;
+
+    public override void StartInitFromObject()
+    {
+        OnCompletedMoveGrid();
+    }
 
     public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
         // 감지 범위 내의 적 유닛 탐색
-        List<GridPosition> detectedPositions = GetValidActionGridPositionList();
+        var (obj, pos) = LevelGrid.Instance.GetClosestTargetGridInfo(m_BaseObject.GetGridPosition(), GetValidActionGridPositionList());
+        if (obj == null)
+            return this;
+
+        m_BaseObject.SetTarget(obj);
 
         ActionStart(onActionComplete);
-
-        if (detectedPositions.Count > 0)
-        {
-            // 가장 가까운 적의 GridPosition을 가져옴
-            GridPosition targetGridPosition = LevelGrid.Instance.GetClosestTargetGridPosition(m_BaseObject.GetGridPosition(), detectedPositions);
-
-            // 타겟 객체 캐싱 (추후 PurseAction에서 사용)
-            BaseObject target = LevelGrid.Instance.GetUnitAtGridPosition(targetGridPosition);
-            m_BaseObject.SetTarget(target);
-
-            //Debug.Log($"Detected Closet Enemy : {target.name}, Pos : {targetGridPosition}");
-
-            ActionComplete();
-            return m_BaseObject.GetAction<ChaseAction>();
-        }
-
-        ActionComplete();
-        return this;
+        return m_BaseObject.GetAction<ChaseAction>();
     }
 
     public override string GetActionName()
@@ -77,6 +66,7 @@ public class IdleAction : BaseAction
                     if (!LevelGrid.Instance.HasEnemyAtGridPosition(testGridPosition, m_BaseObject))
                         continue;
 
+
                     if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))
                     {
                         continue;
@@ -87,8 +77,10 @@ public class IdleAction : BaseAction
                         continue;
                     }
 
+                    // 너무 멀면 패스
                     int pathfindingDistanceMultiplier = 10;
-                    if (Pathfinding.Instance.GetPathLength(unitGridPosition, testGridPosition) > m_iDetectRange * pathfindingDistanceMultiplier)
+                    if (Pathfinding.Instance.GetPathLength(unitGridPosition, testGridPosition) > 
+                        m_iDetectRange * pathfindingDistanceMultiplier)
                     {
                         // Path length is too long
                         continue;
@@ -102,4 +94,15 @@ public class IdleAction : BaseAction
         return validGridPositionList;
     }
 
+    public override void ClearAction(BaseAction TODOAction)
+    {
+        base.ClearAction(TODOAction);
+
+        // 자리 변화가 생길 경우에만 예약 취소
+        if (TODOAction is ChaseAction ||
+           TODOAction is CommandMoveAction)
+        {
+            OnStartMoveGrid();
+        }
+    }
 }

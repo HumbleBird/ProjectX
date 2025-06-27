@@ -11,6 +11,7 @@ public class MoveAction : BaseAction
 {
     public event EventHandler OnStartMoving;
     public event EventHandler OnStopMoving;
+
     public event EventHandler<OnChangeFloorsStartedEventArgs> OnChangedFloorsStarted;
     public class OnChangeFloorsStartedEventArgs : EventArgs
     {
@@ -18,7 +19,6 @@ public class MoveAction : BaseAction
         public GridPosition targetGridPosition;
     }
 
-    protected GridPosition PrevReservePosition;
 
     protected int    m_iMaxMoveDistance;
     protected  float m_fMoveSpeed;
@@ -75,13 +75,14 @@ public class MoveAction : BaseAction
         float stoppingDistance = .1f;
         if (Vector3.Distance(m_BaseObject.transform.position, targetPosition) < stoppingDistance)
         {
+            OnCompletedMoveGrid();
             //currentPositionIndex++;
             //if (currentPositionIndex >= positionList.Count)
             {
                 // 최종 목적지에 도착했는지 여부 따지기
-                if(DestGirdPosition == m_BaseObject.GetGridPosition())
+                if (DestGirdPosition == m_BaseObject.GetGridPosition())
                 {
-                    DestGirdPosition = default;
+                    //DestGirdPosition = default;
                     OnStopMoving?.Invoke(this, EventArgs.Empty);
                     ActionComplete();
                 }
@@ -155,10 +156,6 @@ public class MoveAction : BaseAction
                     if (!LevelGrid.Instance.HasEnemyAtGridPosition(testGridPosition, m_BaseObject))
                         continue;
 
-                    // Check Reverse Pos
-                    if (LevelGrid.Instance.GetReservedGridPosition(testGridPosition))
-                        continue;
-
                     if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))
                     {
                         continue;
@@ -204,14 +201,18 @@ public class MoveAction : BaseAction
     }
 
 
-    public override void ClearAction()
+    public override void ClearAction(BaseAction TODOAction)
     {
-        base.ClearAction();
+        base.ClearAction(TODOAction);
 
-        if (PrevReservePosition != default)
+        // 자리 변화가 생길 경우에만 예약 취소
+        if(TODOAction is ChaseAction ||
+           TODOAction is CommandMoveAction)
         {
-            LevelGrid.Instance.SetReserveGridPosition(PrevReservePosition, false);
-            PrevReservePosition = default;
+            OnStartMoveGrid();
         }
+
+        if (positionList != null)
+            positionList.Clear();
     }
 }
