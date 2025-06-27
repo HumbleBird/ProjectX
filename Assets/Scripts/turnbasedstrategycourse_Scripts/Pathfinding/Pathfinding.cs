@@ -155,15 +155,22 @@ public class Pathfinding : MonoBehaviour
                 bool isEnd = neighbourNode == endNode;
                 bool isReserved = LevelGrid.Instance.IsReservedGridPosition(neighbourNode.GetGridPosition());
 
-                // 1. WalkableÀÌ ¾Æ´Ï°í ½ÃÀÛ/µµÂøµµ ¾Æ´Ï¸é Á¦¿Ü
+                // 1. Walkableì´ ì•„ë‹ˆê³  ì‹œì‘/ë„ì°©ë„ ì•„ë‹ˆë©´ ì œì™¸
                 if (!neighbourNode.IsWalkable() && !isStart && !isEnd)
                 {
                     closedList.Add(neighbourNode);
                     continue;
                 }
 
-                // 2. ¿¹¾àµÈ Ä­ÀÎµ¥ ½ÃÀÛ/µµÂøÀÌ ¾Æ´Ï¸é Á¦¿Ü
-                if (isReserved && !isStart && !isEnd)
+                // 2. ì‹œì‘/ë„ì°©ì˜ ì˜¤ë¸Œì íŠ¸ë¥¼ ì œì™¸í•œ ì˜¤ë¸Œì œê°€ ìˆë‹¤ë©´ ì œì™¸í•œë‹¤.
+                if (LevelGrid.Instance.HasAnyUnitOnGridPosition(neighbourNode.GetGridPosition()) && !isStart && !isEnd)
+                {
+                    closedList.Add(neighbourNode);
+                    continue;
+                }
+
+                // 2. ì˜ˆì•½ëœ ì¹¸ì¸ë° ì‹œì‘/ë„ì°©ì´ ì•„ë‹ˆë©´ ì œì™¸
+                if (isReserved)
                 {
                     closedList.Add(neighbourNode);
                     continue;

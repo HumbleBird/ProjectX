@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class BaseAction : MonoBehaviour
@@ -8,7 +9,7 @@ public abstract class BaseAction : MonoBehaviour
     public static event EventHandler OnAnyActionStarted;
     public static event EventHandler OnAnyActionCompleted;
 
-    // ±◊∏ÆµÂ ¿Ãµøø° ∞¸«— ¿Ã∫•∆Æ
+    // Í∑∏Î¶¨Îìú Ïù¥ÎèôÏóê Í¥ÄÌïú Ïù¥Î≤§Ìä∏
     public static event EventHandler<OnChangeMoveGridEventArgs> OnMoveGridPositionStarted;
     public static event EventHandler<OnChangeMoveGridEventArgs> OnMoveGridPositionCompleted;
 
@@ -39,6 +40,8 @@ public abstract class BaseAction : MonoBehaviour
 
         OnMoveGridPositionStarted += LevelGrid.Instance.OnMoveStartGrid;
         OnMoveGridPositionCompleted += LevelGrid.Instance.OnMoveCompletedGrid;
+
+        OnAnyActionCompleted += MethodOnAnyActionCompleted;
     }
 
     protected virtual void Start()
@@ -47,11 +50,6 @@ public abstract class BaseAction : MonoBehaviour
     }
 
     protected virtual void Update()
-    {
-
-    }
-
-    public virtual void StartInitFromObject()
     {
 
     }
@@ -135,6 +133,12 @@ public abstract class BaseAction : MonoBehaviour
     public virtual void ClearAction(BaseAction TOODAction)
     {
 
+    }
+
+    public virtual void MethodOnAnyActionCompleted(object obj, EventArgs args)
+    {
+        if (DestGirdPosition != default)
+            DestGirdPosition = default;
     }
 
 }

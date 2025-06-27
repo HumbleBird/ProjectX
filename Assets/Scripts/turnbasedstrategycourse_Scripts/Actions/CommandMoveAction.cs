@@ -18,19 +18,19 @@ public class CommandMoveAction : MoveAction
         // Find Path
         List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(m_BaseObject.GetGridPosition(), DestGirdPosition, out int pathLength);
 
-        if (pathGridPositionList != null && pathGridPositionList.Count >= AVALIABLE_MOVE_GRID)
+        if (pathGridPositionList != null && pathGridPositionList.Count >= Remove_MOVE_GRID)
         {
-            currentPositionIndex = 0;
-            positionList = new List<Vector3>();
+            pathGridPositionList.RemoveAt(0);
 
-            if(PrevReservePosition != default)
-                LevelGrid.Instance.SetReserveGridPosition(PrevReservePosition, false);
+            forwardPosition = LevelGrid.Instance.GetWorldPosition(pathGridPositionList[0]);
 
-            PrevReservePosition = pathGridPositionList[1];
+            LevelGrid.Instance.SetReserveGridPosition(pathGridPositionList[0], true);
 
-            LevelGrid.Instance.SetReserveGridPosition(pathGridPositionList[1], true);
-            positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPositionList[1]));
+
+            // Event
+            OnStartMoveGrid();
             InvokeOnStartMoving();
+
             ActionStart(onActionComplete);
         }
 
@@ -67,8 +67,8 @@ public class CommandMoveAction : MoveAction
                     if (LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
                         continue;
 
-                    // Check Reverse Pos
-                    if (LevelGrid.Instance.GetReservedGridPosition(testGridPosition))
+                    // 예약된 장소면 패스
+                    if (LevelGrid.Instance.IsReservedGridPosition(testGridPosition))
                         continue;
 
                     if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))

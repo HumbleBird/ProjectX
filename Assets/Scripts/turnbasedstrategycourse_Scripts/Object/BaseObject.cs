@@ -58,11 +58,7 @@ public class BaseObject : MonoBehaviour
 
         OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
 
-        // Object°¡ ¸ÕÀú Ã³¸®ÇØ¾ß ÇÒ °Íµé.
-        foreach (var action in baseActionDict.Values)
-        {
-            action.StartInitFromObject();
-        }
+
     }
 
     protected virtual void Update()
@@ -175,13 +171,13 @@ public class BaseObject : MonoBehaviour
 
     public void Hit(AttackBase attack)
     {
-        // Å©¸®Æ¼ÄÃ
+        // í¬ë¦¬í‹°ì»¬
 
-        // È¸ÇÇÀ²
+        // íšŒí”¼ìœ¨
 
-        // ¹İ°İÀ²
+        // ë°˜ê²©ìœ¨
 
-        // ±âÅ¸ µîµî Àû¿ëÇÏ±â
+        // ê¸°íƒ€ ë“±ë“± ì ìš©í•˜ê¸°
 
         m_StatSystem.ReduceHP(attack.m_iPhysicalAttackDamage);
     }

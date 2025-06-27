@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,10 +9,7 @@ public class IdleAction : BaseAction
 {
     int m_iDetectRange => m_StatSystem.m_Stat.m_iDetectRange;
 
-    public override void StartInitFromObject()
-    {
-        OnCompletedMoveGrid();
-    }
+
 
     public override BaseAction TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
@@ -63,8 +60,8 @@ public class IdleAction : BaseAction
                     }
 
                     // Detect Object
-                    if (!LevelGrid.Instance.HasEnemyAtGridPosition(testGridPosition, m_BaseObject))
-                        continue;
+                    if (!LevelGrid.Instance.HasEnemyAtGridPosition(m_BaseObject.GetGridPosition(), testGridPosition))
+                            continue;
 
 
                     if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))

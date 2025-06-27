@@ -28,6 +28,30 @@ public class StatSystem : MonoBehaviour
 
         // MP
         mp = mpMax;
+
+        // Set Attack Range
+        int maxX = 0;
+        int minX = 0;
+        int maxZ = 0;
+        int minZ = 0;
+        int maxFloor = 0;
+        int minFllor = 0;
+
+        foreach (var attack in m_Stat.attackPatterns)
+        {
+            foreach (GridPosition offset in attack.m_RangeOffset)
+            {
+                if (offset.x > maxX) maxX = offset.x;
+                if (offset.x < minX) minX = offset.x;
+                if (offset.z > maxZ) maxZ = offset.z;
+                if (offset.z < minZ) minZ = offset.z;
+                if (offset.floor > maxFloor) maxFloor = offset.floor;
+                if (offset.floor < minFllor) minFllor = offset.floor;
+            }
+        }
+
+        m_Stat.m_iMaxAttackRange = new GridPosition(maxX, maxZ, maxFloor);
+        m_Stat.m_iMinAttackRange = new GridPosition(minX, minZ, minFllor);
     }
 
     public void ReduceHP(int damageAmount)

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Define;
@@ -93,7 +94,7 @@ public class LevelGrid : MonoBehaviour
 
     public List<BaseObject> GetUnitListAtGridPosition(GridPosition gridPosition)
     {
-        // ?? ¾îµð¿¡ ¾²´Â ¹°°ÇÀÌ°í
+        // ?? ì–´ë””ì— ì“°ëŠ” ë¬¼ê±´ì´ê³ 
         GridObject gridObject = GetGridSystem(gridPosition.floor).GetGridObject(gridPosition);
         return gridObject.GetUnitList();
     }
@@ -151,7 +152,7 @@ public class LevelGrid : MonoBehaviour
         return gridObject.GetInteractable();
     }
 
-    public bool GetReservedGridPosition(GridPosition gridPosition)
+    public bool IsReservedGridPosition(GridPosition gridPosition)
     {
         reserveGirdPosition.TryGetValue(gridPosition, out bool result);
 
@@ -164,10 +165,10 @@ public class LevelGrid : MonoBehaviour
         int dz = target.z - origin.z;
 
         if (dx == 0 && dz == 0)
-            return E_Dir.North; // ÀÚ±â ÀÚ½Å ¡æ ±âº»°ª ¹ÝÈ¯
+            return E_Dir.North; // ìžê¸° ìžì‹  â†’ ê¸°ë³¸ê°’ ë°˜í™˜
 
         float angle = Mathf.Atan2(dz, dx) * Mathf.Rad2Deg;
-        angle = (angle + 360f) % 360f; // 0~360µµ Á¤±ÔÈ­
+        angle = (angle + 360f) % 360f; // 0~360ë„ ì •ê·œí™”
 
         if (angle >= 337.5f || angle < 22.5f)
             return E_Dir.East;
@@ -192,7 +193,7 @@ public class LevelGrid : MonoBehaviour
         int dx = a.x - b.x;
         int dz = a.z - b.z;
         int df = a.floor - b.floor;
-        return dx * dx + dz * dz + df * df; // 3D °Å¸®ÀÇ Á¦°ö (Á¤¼ö ±â¹Ý)
+        return dx * dx + dz * dz + df * df; // 3D ê±°ë¦¬ì˜ ì œê³± (ì •ìˆ˜ ê¸°ë°˜)
         // return dx * dx + dz * dz + (df * floorWeight) * (df * floorWeight);
     }
 
@@ -204,25 +205,98 @@ public class LevelGrid : MonoBehaviour
         return new GridPosition(Math.Abs(dx), Math.Abs(dz), Math.Abs(df));
     }
 
-    public GridPosition GetClosestTargetGridPosition(GridPosition gridPosition, List<GridPosition> positions)
+    public (BaseObject, GridPosition) GetClosestTargetGridInfo(GridPosition gridPosition, List<GridPosition> positions)
     {
-        GridPosition selfPos = gridPosition;
-        GridPosition closest = positions[0];
+        if (positions.Count == 0)
+            return (null, default);
 
-        float minDistanceSqr = GetGridDistanceSquared_float(selfPos, closest);
+        GridPosition closest = default;
+        BaseObject obj = null;
+        int minPathLength = int.MaxValue;
 
         foreach (GridPosition pos in positions)
         {
-            float distSqr = GetGridDistanceSquared_float(selfPos, pos);
-            if (distSqr < minDistanceSqr)
+            if (!Pathfinding.Instance.HasPath(gridPosition, pos))
+                continue;
+
+            // ì£½ì€ ë†ˆíŒ¨ìŠ¤
+            BaseObject serch = GetUnitAtGridPosition(pos);
+            if (serch == null || serch.m_StatSystem.m_IsDead)
+                continue;
+
+            int pathLength = Pathfinding.Instance.GetPathLength(gridPosition, pos);
+            if (pathLength < minPathLength)
             {
-                minDistanceSqr = distSqr;
+                minPathLength = pathLength;
+                closest = pos;
+                obj = serch;
+            }
+        }
+
+        return (obj, closest);
+    }
+
+    public GridPosition GetClosestGridPositionSpecificCondition(GridPosition gridPosition, List<GridPosition> positions, Func<GridPosition, bool> condition= null)
+    {
+        if (positions.Count == 0)
+            return default;
+
+        GridPosition closest = default;
+        int minPathLength = int.MaxValue;
+
+        foreach (GridPosition pos in positions)
+        {
+            if (!Pathfinding.Instance.HasPath(gridPosition, pos))
+                continue;
+
+            if (condition != null &&!condition(pos))
+                continue;
+
+            int pathLength = Pathfinding.Instance.GetPathLength(gridPosition, pos);
+            if (pathLength < minPathLength)
+            {
+                minPathLength = pathLength;
                 closest = pos;
             }
         }
 
         return closest;
     }
+
+    public (T result, GridPosition position) GetClosestGridPositionWithData<T>(
+    GridPosition origin,
+    List<GridPosition> positions,
+    Func<GridPosition, bool> condition,
+    Func<GridPosition, T> selector)
+    {
+        if (positions.Count == 0)
+            return (default, default);
+
+        GridPosition closest = default;
+        T result = default;
+        int minPathLength = int.MaxValue;
+
+        foreach (var pos in positions)
+        {
+            if (!Pathfinding.Instance.HasPath(origin, pos))
+                continue;
+
+            if (condition != null && !condition(pos))
+                continue;
+
+            int pathLength = Pathfinding.Instance.GetPathLength(origin, pos);
+            if (pathLength < minPathLength)
+            {
+                minPathLength = pathLength;
+                closest = pos;
+                result = selector(pos);
+            }
+        }
+
+        return (result, closest);
+    }
+
+
 
     #endregion
 
@@ -237,9 +311,6 @@ public class LevelGrid : MonoBehaviour
             reserveGirdPosition.Add(gridPosition, isReserve);
         else
             reserveGirdPosition[gridPosition] = isReserve;
-
-        PathNode node = Pathfinding.Instance.GetNode(gridPosition.x, gridPosition.z, gridPosition.floor);
-        node.SetIsWalkable(!isReserve);
     }
 
     public void SetInteractableAtGridPosition(GridPosition gridPosition, IInteractable interactable)
@@ -247,7 +318,6 @@ public class LevelGrid : MonoBehaviour
         GridObject gridObject = GetGridSystem(gridPosition.floor).GetGridObject(gridPosition);
         gridObject.SetInteractable(interactable);
     }
-
 
     #endregion
 
@@ -265,41 +335,34 @@ public class LevelGrid : MonoBehaviour
         }
     }
 
-
     public bool HasAnyUnitOnGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = GetGridSystem(gridPosition.floor).GetGridObject(gridPosition);
         return gridObject.HasAnyUnit();
     }
 
-    public bool HasEnemyAtGridPosition(GridPosition gridPosition, BaseObject searcher)
+    public bool HasEnemyAtGridPosition(GridPosition gridPosition, GridPosition targetPosition)
     {
-        BaseObject o = GetUnitAtGridPosition(gridPosition);
+        BaseObject o = GetUnitAtGridPosition(targetPosition);
         if (o == null)
             return false;
-        else if (o.IsEnemy() == searcher.IsEnemy())
+        else if (GetUnitAtGridPosition(gridPosition).IsEnemy() == o.IsEnemy())
             return false;
 
         return true;
     }
 
-
-    public E_Distance IsTargetInAttackRange(GridPosition gridPosition, GridPosition targetPosition)
+    public bool HasAllyAtGridPosition(GridPosition gridPosition, GridPosition targetPosition)
     {
-        BaseObject attacker = GetUnitAtGridPosition(gridPosition);
+        BaseObject o = GetUnitAtGridPosition(targetPosition);
+        if (o == null)
+            return false;
+        else if (GetUnitAtGridPosition(gridPosition).IsEnemy() != o.IsEnemy())
+            return false;
 
-        int distance = Mathf.Abs(gridPosition.x - targetPosition.x) + Mathf.Abs(gridPosition.z - targetPosition.z);
-
-        int minRange = attacker.m_StatSystem.m_Stat.m_iMinAttackRange;
-        int maxRange = attacker.m_StatSystem.m_Stat.m_iMaxAttackRange;
-
-        if (distance > maxRange)
-            return E_Distance.Far;
-        else if (distance < minRange)
-            return E_Distance.Close;
-        else
-            return E_Distance.Proper;
+        return true;
     }
+
 
     public bool IsTargeSoFarAtChase(GridPosition gridPosition, GridPosition targetPosition)
     {
@@ -341,35 +404,28 @@ public class LevelGrid : MonoBehaviour
                 rotatedX = -z;
                 rotatedZ = x;
                 break;
-                //case E_Dir.NorthEast:
-                //    rotatedX = Mathf.RoundToInt(x * 0.7071f - z * 0.7071f);
-                //    rotatedZ = Mathf.RoundToInt(x * 0.7071f + z * 0.7071f);
-                //    break;
-                //case E_Dir.SouthEast:
-                //    rotatedX = Mathf.RoundToInt(-x * 0.7071f - z * 0.7071f);
-                //    rotatedZ = Mathf.RoundToInt(x * 0.7071f - z * 0.7071f);
-                //    break;
-                //case E_Dir.SouthWest:
-                //    rotatedX = Mathf.RoundToInt(-x * 0.7071f + z * 0.7071f);
-                //    rotatedZ = Mathf.RoundToInt(-x * 0.7071f - z * 0.7071f);
-                //    break;
-                //case E_Dir.NorthWest:
-                //    rotatedX = Mathf.RoundToInt(x * 0.7071f + z * 0.7071f);
-                //    rotatedZ = Mathf.RoundToInt(-x * 0.7071f + z * 0.7071f);
-                //    break;
+            case E_Dir.NorthEast:
+                rotatedX = Mathf.RoundToInt(x * 0.7071f + z * 0.7071f);
+                rotatedZ = Mathf.RoundToInt(-x * 0.7071f + z * 0.7071f);
+                break;
+            case E_Dir.SouthEast:
+                rotatedX = Mathf.RoundToInt(-x * 0.7071f + z * 0.7071f);
+                rotatedZ = Mathf.RoundToInt(-x * 0.7071f - z * 0.7071f);
+                break;
+            case E_Dir.SouthWest:
+                rotatedX = Mathf.RoundToInt(-x * 0.7071f - z * 0.7071f);
+                rotatedZ = Mathf.RoundToInt(x * 0.7071f - z * 0.7071f);
+                break;
+            case E_Dir.NorthWest:
+                rotatedX = Mathf.RoundToInt(x * 0.7071f - z * 0.7071f);
+                rotatedZ = Mathf.RoundToInt(x * 0.7071f + z * 0.7071f);
+                break;
         }
 
         return origin + new GridPosition(rotatedX, rotatedZ, offset.floor);
     }
 
-    public GridPosition DistanceGridPosition(GridPosition gridPosition, GridPosition targetPosition)
-    {
-        return gridPosition - targetPosition;
-    }
-
-
     #endregion
-
 
     #region Order
 
@@ -379,15 +435,17 @@ public class LevelGrid : MonoBehaviour
         gridObject.ClearInteractable();
     }
     
+    // í•´ë‹¹ ì˜¤ë¸Œì œ ìžë¦¬ëŠ” ì´ë™ ê°€ëŠ¥í•œ ê³³.
+    public void OnMoveStartGrid(object obj, BaseAction.OnChangeMoveGridEventArgs args)
+    {
+        SetReserveGridPosition(args.obj.GetGridPosition(), false);
+    }
+
+    // í•´ë‹¹ ì˜¤ë¸Œì œ ìžë¦¬ëŠ” ì´ë™ ë¶ˆê°€ëŠ¥í•œ ê³³.
+    public void OnMoveCompletedGrid(object obj, BaseAction.OnChangeMoveGridEventArgs args)
+    {
+        SetReserveGridPosition(args.obj.GetGridPosition(), true);
+    }
+
     #endregion
-
-
-
-
-
-
-
-
-
-
 }
